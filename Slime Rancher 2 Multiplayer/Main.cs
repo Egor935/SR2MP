@@ -20,48 +20,63 @@ namespace Slime_Rancher_2_Multiplayer
     {
         Rect menuRect = new Rect(10f, 10f, 200f, 600f);
         Rect dragMenu = new Rect(0f, 0f, 200f, 20f);
+
+        bool checkHostServerButton = true;
+        bool checkConnectToServerButton = true;
         public override void OnGUI()
         {
             GUI.color = Color.cyan;
+            GUI.skin.label.alignment = TextAnchor.MiddleCenter;
 
             GUI.Box(new Rect(10f, 10f, 160f, 95f), string.Empty);
 
-            if (GUI.Button(new Rect(15f, 15f, 150f, 25f), "Host server")) StartServer.Main();
-            //GUI.TextField(new Rect(10f, 40f, 150f, 25f), ip);
-            if (GUI.Button(new Rect(15f, 45f, 150f, 25f), "Connect to server")) Client.instance.ConnectToServer();
+            if (checkHostServerButton)
+            {
+                if (GUI.Button(new Rect(15f, 15f, 150f, 25f), "Host server"))
+                {
+                    StartServer.Main();
+                    checkHostServerButton = false;
+
+                    Client.instance.ConnectToServer();
+                    checkConnectToServerButton = false;
+                }
+            }
+            else 
+            {
+                GUI.Label(new Rect(15f, 15f, 150f, 25f), "Server is hosted");
+            }
+
+            if (checkConnectToServerButton)
+            {
+                if (GUI.Button(new Rect(15f, 45f, 150f, 25f), "Connect to server"))
+                {
+                    if (File.Exists("ip.txt"))
+                    {
+                        ip = File.ReadAllText("ip.txt");
+                        Client.instance.ConnectToServer();
+                        checkConnectToServerButton = false;
+                        checkHostServerButton = false;
+                    }
+                    else
+                    {
+                        MelonLogger.Error("ip.txt not found");
+                    }
+                }
+            }
+            else
+            {
+                GUI.Label(new Rect(15f, 45f, 150f, 25f), "You are connected");
+            }
 
             if (GUI.Button(new Rect(15f, 75f, 25f, 25f), "-")) smoothValue -= 5f;
 
-            GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+            
             GUI.Label(new Rect(40f, 75f, 100f, 25f), $"Smooth: {smoothValue}");
 
             if (GUI.Button(new Rect(140f, 75f, 25f, 25f), "+")) smoothValue += 5f;
-
-            //menuRect = GUI.Window(0, menuRect, (GUI.WindowFunction)Menu, "Menu");
         }
 
-        public static string ip = File.ReadAllText("ip.txt");
-        /*void Menu(int ID0)
-        {
-            GUILayout.BeginArea(new Rect(0f, 0f, 200f, 600f));
-            GUILayout.EndArea();
-            //GUI.color = Color.cyan;
-
-            //GUILayout.BeginVertical(null);
-
-            //if (GUILayout.Button("Host server", GUI.skin.button, null)) StartServer.Main();
-            ip = GUILayout.TextField(ip, null);
-            if (GUILayout.Button("Connect to server", null)) Client.instance.ConnectToServer();
-
-            GUILayout.BeginHorizontal(default);
-            if (GUILayout.Button("-", null)) smoothValue -= 5f;
-            GUILayout.Label(smoothValue.ToString(), null);
-            if (GUILayout.Button("+", null)) smoothValue += 5f;
-            GUILayout.EndHorizontal();
-
-            //GUILayout.EndVertical();
-            GUI.DragWindow(dragMenu);
-        }*/
+        public static string ip = "127.0.0.1";
 
         [Obsolete]
         public override void OnApplicationStart()
