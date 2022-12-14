@@ -4,23 +4,23 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static SR2MP.Main.Variables;
 
 namespace GameServer
 {
-    class StartServer
+    class ServerStart
     {
         private static bool isRunning = false;
 
-        public static void Main()
+        public static void Start()
         {
             //Console.Title = "Game Server";
             isRunning = true;
 
             Thread mainThread = new Thread(new ThreadStart(MainThread));
             mainThread.Start();
-            //Slime_Rancher_2_Multiplayer.Main.serverStarted = true;
 
-            Server.Start(2, 22222);
+            Server.Start(playersCount, port);
         }
 
         private static void MainThread()
@@ -32,7 +32,7 @@ namespace GameServer
             {
                 while (_nextLoop < DateTime.Now)
                 {
-                    ServerThreadManager.UpdateMain();
+                    GameLogic.Update();
 
                     _nextLoop = _nextLoop.AddMilliseconds(Constants.MS_PER_TICK);
 

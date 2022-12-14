@@ -1,13 +1,14 @@
-﻿using Slime_Rancher_2_Multiplayer;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace GameServer
 {
     class ServerHandle
     {
-        public static void WelcomeReceived(int _fromClient, Packets _packet)
+        public static void WelcomeReceived(int _fromClient, Packet _packet)
         {
             int _clientIdCheck = _packet.ReadInt();
             string _username = _packet.ReadString();
@@ -17,27 +18,24 @@ namespace GameServer
             {
                 Console.WriteLine($"Player \"{_username}\" (ID: {_fromClient}) has assumed the wrong client ID ({_clientIdCheck})!");
             }
-            //Server.clients[_fromClient].SendIntoGame(_username);
             // TODO: send player into game
         }
 
-        public static void UDPTestReceived(int _fromClient, Packets _packet)
+        public static void UDPTestReceived(int _fromClient, Packet _packet)
         {
             string _msg = _packet.ReadString();
 
             Console.WriteLine($"Received packet via UDP. Contains message: {_msg}");
         }
 
-        public static void SpawnBodyReceived(int _fromClient, Packets _packet)
+        public static void MovementReceived(int _fromClient, Packet _packet)
         {
-            ServerSend.SpawnPlayer();
+            ServerSend.SendMovement(_fromClient, _packet);
         }
 
-        public static void PlayerMovementReceived(int _fromClient, Packets _packet)
+        public static void AnimationsReceived(int _fromClient, Packet _packet)
         {
-            var pos = _packet.ReadVector3();
-            var rot = _packet.ReadQuaternion();
-            ServerSend.PlayerMovement(_fromClient, pos, rot);
+            ServerSend.SendAnimations(_fromClient, _packet);
         }
     }
 }

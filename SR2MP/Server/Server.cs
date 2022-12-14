@@ -1,9 +1,11 @@
-﻿using System;
+﻿using SR2MP;
+using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Net;
+using System.Linq;
 using System.Net.Sockets;
-using Slime_Rancher_2_Multiplayer;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace GameServer
 {
@@ -11,8 +13,8 @@ namespace GameServer
     {
         public static int MaxPlayers { get; private set; }
         public static int Port { get; private set; }
-        public static Dictionary<int, ServerClient> clients = new Dictionary<int, ServerClient>();
-        public delegate void PacketHandler(int _fromClient, Packets _packet);
+        public static Dictionary<int, Client> clients = new Dictionary<int, Client>();
+        public delegate void PacketHandler(int _fromClient, Packet _packet);
         public static Dictionary<int, PacketHandler> packetHandlers;
 
         private static TcpListener tcpListener;
@@ -67,7 +69,7 @@ namespace GameServer
                     return;
                 }
 
-                using (Packets _packet = new Packets(_data))
+                using (Packet _packet = new Packet(_data))
                 {
                     int _clientId = _packet.ReadInt();
 
@@ -94,7 +96,7 @@ namespace GameServer
             }
         }
 
-        public static void SendUDPData(IPEndPoint _clientEndPoint, Packets _packet)
+        public static void SendUDPData(IPEndPoint _clientEndPoint, Packet _packet)
         {
             try
             {
@@ -113,15 +115,15 @@ namespace GameServer
         {
             for (int i = 1; i <= MaxPlayers; i++)
             {
-                clients.Add(i, new ServerClient(i));
+                clients.Add(i, new Client(i));
             }
 
             packetHandlers = new Dictionary<int, PacketHandler>()
             {
                 { (int)ClientPackets.welcomeReceived, ServerHandle.WelcomeReceived },
                 { (int)ClientPackets.updTestReceived, ServerHandle.UDPTestReceived },
-                { (int)ClientPackets.spawnPlayer, ServerHandle.SpawnBodyReceived },
-                { (int)ClientPackets.SendMovement, ServerHandle.PlayerMovementReceived }
+                { (int)ClientPackets.movementReceived, ServerHandle.MovementReceived },
+                { (int)ClientPackets.animationsReceived, ServerHandle.AnimationsReceived }
             };
             Console.WriteLine("Initialized packets.");
         }

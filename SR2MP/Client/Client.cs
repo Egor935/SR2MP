@@ -1,31 +1,31 @@
-﻿using GameServer;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Sockets;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Slime_Rancher_2_Multiplayer
+namespace SR2MP
 {
     public class Client : MonoBehaviour
     {
+        public Client(IntPtr ptr) : base(ptr) { }
+
         public static Client instance;
         public static int dataBufferSize = 4096;
 
-        public string ip = Main.ip;
-        public int port = 22222;
+        public string ip => Main.Variables.IP;
+        public int port => Main.Variables.port;
         public int myId = 0;
         public TCP tcp;
         public UDP udp;
 
-        private delegate void PacketHandler(Packets _packet);
+        private delegate void PacketHandler(Packet _packet);
         private static Dictionary<int, PacketHandler> packetHandlers;
 
-        public void Awake()
+        private void Awake()
         {
             if (instance == null)
             {
@@ -36,13 +36,13 @@ namespace Slime_Rancher_2_Multiplayer
                 Debug.Log("Instance already exists, destroying object!");
                 Destroy(this);
             }
-            Start();
         }
 
         private void Start()
         {
             tcp = new TCP();
             udp = new UDP();
+            ConnectToServer();
         }
 
         public void ConnectToServer()
@@ -57,7 +57,7 @@ namespace Slime_Rancher_2_Multiplayer
             public TcpClient socket;
 
             private NetworkStream stream;
-            private Packets receivedData;
+            private Packet receivedData;
             private byte[] receiveBuffer;
 
             public void Connect()
@@ -83,12 +83,12 @@ namespace Slime_Rancher_2_Multiplayer
 
                 stream = socket.GetStream();
 
-                receivedData = new Packets();
+                receivedData = new Packet();
 
                 stream.BeginRead(receiveBuffer, 0, dataBufferSize, ReceiveCallback, null);
             }
 
-            public void SendData(Packets _packet)
+            public void SendData(Packet _packet)
             {
                 try
                 {
@@ -146,7 +146,7 @@ namespace Slime_Rancher_2_Multiplayer
                     byte[] _packetBytes = receivedData.ReadBytes(_packetLength);
                     ThreadManager.ExecuteOnMainThread(() =>
                     {
-                        using (Packets _packet = new Packets(_packetBytes))
+                        using (Packet _packet = new Packet(_packetBytes))
                         {
                             int _packetId = _packet.ReadInt();
                             packetHandlers[_packetId](_packet);
@@ -190,13 +190,13 @@ namespace Slime_Rancher_2_Multiplayer
                 socket.Connect(endPoint);
                 socket.BeginReceive(ReceiveCallback, null);
 
-                using (Packets _packet = new Packets())
+                using (Packet _packet = new Packet())
                 {
                     SendData(_packet);
                 }
             }
 
-            public void SendData(Packets _packet)
+            public void SendData(Packet _packet)
             {
                 try
                 {
@@ -235,7 +235,7 @@ namespace Slime_Rancher_2_Multiplayer
 
             private void HandleData(byte[] _data)
             {
-                using (Packets _packet = new Packets(_data))
+                using (Packet _packet = new Packet(_data))
                 {
                     int _packetLength = _packet.ReadInt();
                     _data = _packet.ReadBytes(_packetLength);
@@ -243,7 +243,7 @@ namespace Slime_Rancher_2_Multiplayer
 
                 ThreadManager.ExecuteOnMainThread(() =>
                 {
-                    using (Packets _packet = new Packets(_data))
+                    using (Packet _packet = new Packet(_data))
                     {
                         int _packetId = _packet.ReadInt();
                         packetHandlers[_packetId](_packet);
@@ -258,8 +258,8 @@ namespace Slime_Rancher_2_Multiplayer
         {
             { (int)ServerPackets.welcome, ClientHandle.Welcome },
             { (int)ServerPackets.udpTest, ClientHandle.UDPTest },
-            { (int)ServerPackets.spawnPlayer, ClientHandle.SpawnPlayer },
-            { (int)ServerPackets.SendMovement, ClientHandle.PlayerMovement }
+            { (int)ServerPackets.sendMovement, ClientHandle.MovementReceived },
+            { (int)ServerPackets.sendAnimations, ClientHandle.AnimationsReceived }
         };
             Debug.Log("Initialized packets.");
         }

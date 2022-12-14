@@ -1,23 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Net;
+using System.Linq;
 using System.Net.Sockets;
-using System.Numerics;
-using Slime_Rancher_2_Multiplayer;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace GameServer
 {
-    class ServerClient
+    class Client
     {
         public static int dataBufferSize = 4096;
 
         public int id;
-        //public Player player;
         public TCP tcp;
         public UDP udp;
 
-        public ServerClient(int _clientId)
+        public Client(int _clientId)
         {
             id = _clientId;
             tcp = new TCP(id);
@@ -30,7 +29,7 @@ namespace GameServer
 
             private readonly int id;
             private NetworkStream stream;
-            private Packets receivedData;
+            private Packet receivedData;
             private byte[] receiveBuffer;
 
             public TCP(int _id)
@@ -46,7 +45,7 @@ namespace GameServer
 
                 stream = socket.GetStream();
 
-                receivedData = new Packets();
+                receivedData = new Packet();
                 receiveBuffer = new byte[dataBufferSize];
 
                 stream.BeginRead(receiveBuffer, 0, dataBufferSize, ReceiveCallback, null);
@@ -54,7 +53,7 @@ namespace GameServer
                 ServerSend.Welcome(id, "Welcome to the server!");
             }
 
-            public void SendData(Packets _packet)
+            public void SendData(Packet _packet)
             {
                 try
                 {
@@ -111,9 +110,9 @@ namespace GameServer
                 while (_packetLength > 0 && _packetLength <= receivedData.UnreadLength())
                 {
                     byte[] _packetBytes = receivedData.ReadBytes(_packetLength);
-                    ServerThreadManager.ExecuteOnMainThread(() =>
+                    ThreadManager.ExecuteOnMainThread(() =>
                     {
-                        using (Packets _packet = new Packets(_packetBytes))
+                        using (Packet _packet = new Packet(_packetBytes))
                         {
                             int _packetId = _packet.ReadInt();
                             Server.packetHandlers[_packetId](id, _packet);
@@ -157,19 +156,19 @@ namespace GameServer
                 ServerSend.UDPTest(id);
             }
 
-            public void SendData(Packets _packet)
+            public void SendData(Packet _packet)
             {
                 Server.SendUDPData(endPoint, _packet);
             }
 
-            public void HandleData(Packets _packetData)
+            public void HandleData(Packet _packetData)
             {
                 int _packetLength = _packetData.ReadInt();
                 byte[] _packetBytes = _packetData.ReadBytes(_packetLength);
 
-                ServerThreadManager.ExecuteOnMainThread(() =>
+                ThreadManager.ExecuteOnMainThread(() =>
                 {
-                    using (Packets _packet = new Packets(_packetBytes))
+                    using (Packet _packet = new Packet(_packetBytes))
                     {
                         int _packetId = _packet.ReadInt();
                         Server.packetHandlers[_packetId](id, _packet);

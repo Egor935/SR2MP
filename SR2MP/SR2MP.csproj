@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{FC92AB5F-632C-4E57-996F-95AEB20CED96}</ProjectGuid>
+    <ProjectGuid>{A32128F8-A2B5-49F5-9029-640E78B1827B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Slime_Rancher_2_Multiplayer</RootNamespace>
-    <AssemblyName>Slime Rancher 2 Multiplayer</AssemblyName>
+    <RootNamespace>SR2MP</RootNamespace>
+    <AssemblyName>SR2MP</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -42,6 +42,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -54,32 +55,36 @@
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\MelonLoader\Managed\UnityEngine.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\MelonLoader\Managed\UnityEngine.AnimationModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\MelonLoader\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
       <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\MelonLoader\Managed\UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\MelonLoader\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Client\Client.cs" />
     <Compile Include="Client\ClientHandle.cs" />
     <Compile Include="Client\ClientSend.cs" />
-    <Compile Include="Client\Client.cs" />
-    <Compile Include="Server\ServerClient.cs" />
-    <Compile Include="Server\Constants.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Packets.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Client\ThreadManager.cs" />
+    <Compile Include="Server\Client.cs" />
+    <Compile Include="Server\Constants.cs" />
+    <Compile Include="Server\GameLogic.cs" />
     <Compile Include="Server\Server.cs" />
     <Compile Include="Server\ServerHandle.cs" />
     <Compile Include="Server\ServerSend.cs" />
-    <Compile Include="Server\StartServer.cs" />
-    <Compile Include="Server\ServerThreadManager.cs" />
-    <Compile Include="Client\ThreadManager.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Connected Services\" />
+    <Compile Include="Server\ServerStart.cs" />
+    <Compile Include="Server\ThreadManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

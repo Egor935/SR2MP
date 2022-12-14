@@ -3,20 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UnityEngine;
 
-namespace Slime_Rancher_2_Multiplayer
+namespace GameServer
 {
-    public class ThreadManager : MonoBehaviour
+    class ThreadManager
     {
         private static readonly List<Action> executeOnMainThread = new List<Action>();
         private static readonly List<Action> executeCopiedOnMainThread = new List<Action>();
         private static bool actionToExecuteOnMainThread = false;
-
-        private static void Update()
-        {
-            UpdateMain();
-        }
 
         /// <summary>Sets an action to be executed on the main thread.</summary>
         /// <param name="_action">The action to be executed on the main thread.</param>
@@ -24,7 +18,7 @@ namespace Slime_Rancher_2_Multiplayer
         {
             if (_action == null)
             {
-                Debug.Log("No action to execute on main thread!");
+                Console.WriteLine("No action to execute on main thread!");
                 return;
             }
 
