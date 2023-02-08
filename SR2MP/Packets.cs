@@ -1,26 +1,15 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
-/// <summary>Sent from server to client.</summary>
-public enum ServerPackets
+public enum Packets
 {
-    welcome = 1,
-    udpTest,
-    sendMovement,
-    sendAnimations
-}
-
-/// <summary>Sent from client to server.</summary>
-public enum ClientPackets
-{
-    welcomeReceived = 1,
-    updTestReceived,
-    movementReceived,
-    animationsReceived
+    Welcome,
+    Movement,
+    Animations,
+    Time
 }
 
 public class Packet : IDisposable
@@ -32,7 +21,7 @@ public class Packet : IDisposable
     /// <summary>Creates a new empty packet (without an ID).</summary>
     public Packet()
     {
-        buffer = new List<byte>(); // Intitialize buffer
+        buffer = new List<byte>(); // Initialize buffer
         readPos = 0; // Set readPos to 0
     }
 
@@ -40,7 +29,7 @@ public class Packet : IDisposable
     /// <param name="_id">The packet ID.</param>
     public Packet(int _id)
     {
-        buffer = new List<byte>(); // Intitialize buffer
+        buffer = new List<byte>(); // Initialize buffer
         readPos = 0; // Set readPos to 0
 
         Write(_id); // Write packet id to the buffer
@@ -50,7 +39,7 @@ public class Packet : IDisposable
     /// <param name="_data">The bytes to add to the packet.</param>
     public Packet(byte[] _data)
     {
-        buffer = new List<byte>(); // Intitialize buffer
+        buffer = new List<byte>(); // Initialize buffer
         readPos = 0; // Set readPos to 0
 
         SetBytes(_data);
@@ -151,6 +140,11 @@ public class Packet : IDisposable
     {
         buffer.AddRange(BitConverter.GetBytes(_value));
     }
+
+    public void Write(double _value)
+    {
+        buffer.AddRange(BitConverter.GetBytes(_value));
+    }
     /// <summary>Adds a bool to the packet.</summary>
     /// <param name="_value">The bool to add.</param>
     public void Write(bool _value)
@@ -161,8 +155,14 @@ public class Packet : IDisposable
     /// <param name="_value">The string to add.</param>
     public void Write(string _value)
     {
+        /*
         Write(_value.Length); // Add the length of the string to the packet
-        buffer.AddRange(Encoding.ASCII.GetBytes(_value)); // Add the string itself
+        buffer.AddRange(Encoding.UTF8.GetBytes(_value)); // Add the string itself
+        */
+
+        var str = Encoding.UTF8.GetBytes(_value);
+        Write(str.Length);
+        buffer.AddRange(str);
     }
     /// <summary>Adds a Vector3 to the packet.</summary>
     /// <param name="_value">The Vector3 to add.</param>
@@ -311,6 +311,25 @@ public class Packet : IDisposable
         }
     }
 
+    public double ReadDouble(bool _moveReadPos = true)
+    {
+        if (buffer.Count > readPos)
+        {
+            // If there are unread bytes
+            double _value = BitConverter.ToDouble(readableBuffer, readPos); // Convert the bytes to a float
+            if (_moveReadPos)
+            {
+                // If _moveReadPos is true
+                readPos += 8; // Increase readPos by 8
+            }
+            return _value; // Return the double
+        }
+        else
+        {
+            throw new Exception("Could not read value of type 'double'!");
+        }
+    }
+
     /// <summary>Reads a bool from the packet.</summary>
     /// <param name="_moveReadPos">Whether or not to move the buffer's read position.</param>
     public bool ReadBool(bool _moveReadPos = true)
@@ -339,7 +358,7 @@ public class Packet : IDisposable
         try
         {
             int _length = ReadInt(); // Get the length of the string
-            string _value = Encoding.ASCII.GetString(readableBuffer, readPos, _length); // Convert the bytes to a string
+            string _value = Encoding.UTF8.GetString(readableBuffer, readPos, _length); // Convert the bytes to a string
             if (_moveReadPos && _value.Length > 0)
             {
                 // If _moveReadPos is true string is not empty

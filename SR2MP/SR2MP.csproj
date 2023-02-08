@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A32128F8-A2B5-49F5-9029-640E78B1827B}</ProjectGuid>
+    <ProjectGuid>{8234B01C-EAB1-4AA7-80D4-8BF6E8B29FEF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SR2MP</RootNamespace>
@@ -31,8 +31,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="0Harmony, Version=2.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\MelonLoader\0Harmony.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\MelonLoader\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="com.rlabrecque.steamworks.net, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\MelonLoader\Managed\com.rlabrecque.steamworks.net.dll</HintPath>
     </Reference>
     <Reference Include="Il2Cppmscorlib">
       <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\MelonLoader\Managed\Il2Cppmscorlib.dll</HintPath>
@@ -42,7 +50,6 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -62,29 +69,29 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\MelonLoader\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.IMGUIModule">
+    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\MelonLoader\Managed\UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\MelonLoader\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+    <Reference Include="UnityEngine.PhysicsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\MelonLoader\Managed\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client\Client.cs" />
-    <Compile Include="Client\ClientHandle.cs" />
-    <Compile Include="Client\ClientSend.cs" />
+    <Compile Include="Animations.cs" />
+    <Compile Include="HandleData.cs" />
+    <Compile Include="Input.cs" />
     <Compile Include="Main.cs" />
+    <Compile Include="Movement.cs" />
+    <Compile Include="Networking.cs" />
     <Compile Include="Packets.cs" />
+    <Compile Include="Beatrix.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Client\ThreadManager.cs" />
-    <Compile Include="Server\Client.cs" />
-    <Compile Include="Server\Constants.cs" />
-    <Compile Include="Server\GameLogic.cs" />
-    <Compile Include="Server\Server.cs" />
-    <Compile Include="Server\ServerHandle.cs" />
-    <Compile Include="Server\ServerSend.cs" />
-    <Compile Include="Server\ServerStart.cs" />
-    <Compile Include="Server\ThreadManager.cs" />
+    <Compile Include="ReadData.cs" />
+    <Compile Include="SendData.cs" />
+    <Compile Include="SteamLobby.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

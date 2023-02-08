@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("SR2MP")]
-[assembly: AssemblyCopyright("Copyright ©  2022")]
+[assembly: AssemblyCopyright("Copyright ©  2023")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -21,7 +21,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // Следующий GUID служит для идентификации библиотеки типов, если этот проект будет видимым для COM
-[assembly: Guid("a32128f8-a2b5-49f5-9029-640e78b1827b")]
+[assembly: Guid("8234b01c-eab1-4aa7-80d4-8bf6e8b29fef")]
 
 // Сведения о версии сборки состоят из указанных ниже четырех значений:
 //
@@ -35,4 +35,4 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: MelonInfo(typeof(SR2MP.Main), "Slime Rancher 2 Multiplayer", SR2MP.Main.Variables.version, "Egor")]
+[assembly: MelonInfo(typeof(SR2MP.Main), "Slime Rancher 2 Multiplayer", SR2MP.Main.version, "Egor")]

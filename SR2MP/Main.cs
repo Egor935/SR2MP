@@ -1,190 +1,173 @@
-﻿using GameServer;
+﻿using Il2CppMonomiPark.SlimeRancher.Player.CharacterController;
 using MelonLoader;
+using Steamworks;
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 using UnhollowerRuntimeLib;
 using UnityEngine;
-using static UnityEngine.Object;
-using static SR2MP.Main.Variables;
-using static SR2MP.ClientHandle.ReceivedValues;
-using Ping = System.Net.NetworkInformation.Ping;
-using System.Threading;
-using System.Runtime.InteropServices;
 using UnityEngine.SceneManagement;
-using Il2CppMonomiPark.SlimeRancher.Player.CharacterController;
+using static UnityEngine.Object;
 
 namespace SR2MP
 {
     public class Main : MelonMod
     {
-        public class Variables
+        #region Variables
+        public const string version = "0.0.5";
+
+        public static Main Instance;
+
+        public SRCharacterController _Player;
+        GameObject _Beatrix;
+        public Animator _PlayerAnimator;
+        public Animator _BeatrixAnimator;
+
+        bool GameLoadCheck = true;
+        bool GameIsLoaded;
+
+        public static bool menuState = true;
+        #endregion
+
+        [Obsolete]
+        public override void OnApplicationStart()
         {
-            public const string version = "0.0.4";
-            public static string IP
-            {
-                get
-                {
-                    if (File.Exists("ip.txt"))
-                    {
-                        var ip = File.ReadAllText("ip.txt");
-                        if (ip != "")
-                        {
-                            return ip;
-                        }
-                        else
-                        {
-                            MelonLogger.Error("ip.txt is empty");
-                            return null;
-                        }
-                    }
-                    else
-                    {
-                        MelonLogger.Error("ip.txt not found");
-                        File.Create("ip.txt");
-                        var path = Path.GetFullPath("ip.txt");
-                        MelonLogger.Warning($"ip.txt was created in this path: {path} \nPlease open it and insert your IP if you are hosting the server, or your friend's IP if you are connecting to the server and if it has already been hosted.");
-                        return null;
-                    }
-                }
-            }
-            public static int port = 22222;
-            public static int playersCount = 2;
-
-            public static bool checkHostServerButton = true;
-            public static bool checkConnectToServerButton = true;
-            public static float smoothness = 3f;
-
-            public static bool IPavailable
-            {
-                get
-                {
-                    Ping ping = new Ping();
-                    PingReply pingReply = ping.Send(IP);
-                    return (pingReply.Status == IPStatus.Success) && (!IP.Contains("127.0.0"));
-                }
-            }
-
-            public static bool menuState = true;
-            public static Thread newThread;
-
-            public static bool GameLoadCheck = true;
-            public static bool GameIsLoaded;
-
-            public static SRCharacterController player;
-            public static GameObject _Beatrix;
-
-            public static Animator _PlayerAnimator;
-            public static Animator _BeatrixAnimator;
+            SteamAPI.Init();
+            
+            ClassInjector.RegisterTypeInIl2Cpp<SteamLobby>();
+            ClassInjector.RegisterTypeInIl2Cpp<ReadData>();
+            ClassInjector.RegisterTypeInIl2Cpp<Movement>();
+            ClassInjector.RegisterTypeInIl2Cpp<Animations>();
+            ClassInjector.RegisterTypeInIl2Cpp<Beatrix>();
         }
 
-        public static void CreateClientManager()
+        [Obsolete]
+        public override void OnApplicationLateStart()
         {
-            var clientManager = new GameObject("ClientManager");
-            DontDestroyOnLoad(clientManager);
-            clientManager.AddComponent<Client>();
-            clientManager.AddComponent<ThreadManager>();
+            Instance = this;
+            var _NM = new GameObject("NetworkManager");
+            DontDestroyOnLoad(_NM);
+            _NM.AddComponent<SteamLobby>();
         }
 
-        public override void OnInitializeMelon()
-        {
-            ClassInjector.RegisterTypeInIl2Cpp<Client>();
-            ClassInjector.RegisterTypeInIl2Cpp<ThreadManager>();
-        }
+        int _FriendsCount;
+        List<CSteamID> _FriendsIDs = new List<CSteamID>();
+        List<string> _FriendsNames = new List<string>();
 
+        int _StartingPoint = 0;
+
+        bool _FriendSelected;
+        int _SelectedFriend;
         public override void OnGUI()
         {
             if (menuState)
             {
                 GUI.color = Color.cyan;
+                GUI.skin.box.normal.textColor = Color.white;
+
+                #region Main
+
+                GUI.Box(new Rect(10f, 10f, 160f, 300f), "<b>SR2MP</b>");
+
+                if ((_FriendsCount == 0) || _FriendSelected)
+                {
+                    if (GUI.Button(new Rect(15f, 35f, 150f, 25f), "Select friend"))
+                    {
+                        _FriendsCount = SteamFriends.GetFriendCount(EFriendFlags.k_EFriendFlagImmediate);
+                        //MelonLogger.Msg($"Friends count: {_FriendsCount}");
+                        for (int i = 0; i < _FriendsCount; i++)
+                        {
+                            var id = SteamFriends.GetFriendByIndex(i, EFriendFlags.k_EFriendFlagImmediate);
+                            _FriendsIDs.Add(id);
+                            var name = SteamFriends.GetFriendPersonaName(id);
+                            _FriendsNames.Add(name);
+
+                            //MelonLogger.Msg($"{name}: {id.m_SteamID}");
+                            _FriendSelected = false;
+                        }
+                    }
+                }
+
+                else
+                {
+                    if (GUI.Button(new Rect(15f, 35f, 150f, 25f), "Up ▲"))
+                    {
+                        if (_StartingPoint > 0)
+                        {
+                            _StartingPoint -= 1;
+                        }
+                    }
+
+                    for (int i = _StartingPoint; i < _StartingPoint + 7; i++)
+                    {
+                        if (GUI.Button(new Rect(15f, 65f + 30f * (i - _StartingPoint), 150f, 25f), _FriendsNames[i]))
+                        {
+                            var id = _FriendsIDs[i];
+                            SteamLobby.receiver = id;
+                            MelonLogger.Msg(id.m_SteamID);
+
+                            _FriendSelected = true;
+                            _SelectedFriend = i;
+                        }
+                    }
+
+                    if (GUI.Button(new Rect(15f, 275f, 150f, 25f), "Down ▼"))
+                    {
+                        if (_FriendsCount > 0)
+                        {
+                            if (_StartingPoint < (_FriendsCount - 7))
+                            {
+                                _StartingPoint += 1;
+                            }
+                        }
+                    }
+                }
+
+                if (_FriendSelected)
+                {
+                    GUI.Label(new Rect(15f, 65f, 150f, 25f), "Selected friend:");
+                    GUI.Label(new Rect(15f, 95f, 150f, 25f), _FriendsNames[_SelectedFriend]);
+                }
+
+
+                #endregion
+
+                #region Donators
+
+                GUI.Box(new Rect(180f, 10f, 300f, 300f), "<b>Donators</b>");
+
                 GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+                GUI.Label(new Rect(180f, 35f, 100f, 25f), "Name");
+                GUI.Label(new Rect(280f, 35f, 100f, 25f), "Amount");
+                GUI.Label(new Rect(380f, 35f, 100f, 25f), "Date");
 
-                GUI.Box(new Rect(10f, 10f, 160f, 95f), string.Empty);
+                //1 donator
+                GUI.Label(new Rect(180f, 65f, 100f, 25f), "DragonCoreGS");
+                GUI.Label(new Rect(280f, 65f, 100f, 25f), "1500 rubles");
+                GUI.Label(new Rect(380f, 65f, 100f, 25f), "01 FEB 23");
 
-                if (checkHostServerButton)
-                {
-                    if (GUI.Button(new Rect(15f, 15f, 150f, 25f), "Host server"))
-                    {
-                        if (IP != null)
-                        {
-                            MelonLogger.Msg("Trying to host...");
-                            newThread = new Thread(() =>
-                            {
-                                if (IPavailable)
-                                {
-                                    ServerStart.Start();
-                                    checkHostServerButton = false;
-                                    CreateClientManager();
-                                    checkConnectToServerButton = false;
-                                }
-                                else
-                                {
-                                    MelonLogger.Error("Please paste your IP from the Hamachi or RadminVPN into the ip.txt and try again");
-                                }
-                                newThread.Abort();
-                            });
-                            newThread.Start();
-                        }
-                    }
-                }
-                else
-                {
-                    GUI.Label(new Rect(15f, 15f, 150f, 25f), "Server is hosted");
-                }
+                //2 donator
+                GUI.Label(new Rect(180f, 95f, 100f, 25f), "Evan Ranger");
+                GUI.Label(new Rect(280f, 95f, 100f, 25f), "500 rubles");
+                GUI.Label(new Rect(380f, 95f, 100f, 25f), "01 DEC 22");
 
-                if (checkConnectToServerButton)
-                {
-                    if (GUI.Button(new Rect(15f, 45f, 150f, 25f), "Connect to server"))
-                    {
-                        if (IP != null)
-                        {
-                            MelonLogger.Msg("Trying to connect...");
-                            newThread = new Thread(() =>
-                            {
-                                if (IPavailable)
-                                {
-                                    CreateClientManager();
-                                    checkConnectToServerButton = false;
-                                    checkHostServerButton = false;
-                                }
-                                else
-                                {
-                                    MelonLogger.Error("IP is not available, please paste your friend's IP from Hamachi or RadminVPN into the ip.txt and try again");
-                                }
-                                newThread.Abort();
-                            });
-                            newThread.Start();
-                        }
-                    }
-                }
-                else
-                {
-                    GUI.Label(new Rect(15f, 45f, 150f, 25f), "You are connected");
-                }
+                //3 donator
+                GUI.Label(new Rect(180f, 125f, 100f, 25f), "PinkTarr");
+                GUI.Label(new Rect(280f, 125f, 100f, 25f), "200 rubles");
+                GUI.Label(new Rect(380f, 125f, 100f, 25f), "08 FEB 23");
 
-                if (GUI.Button(new Rect(15f, 75f, 25f, 25f), "-"))
-                {
-                    if (smoothness > 1)
-                    {
-                        smoothness -= 1f;
-                    }
-                }
+                //4 donator
+                GUI.Label(new Rect(180f, 155f, 100f, 25f), "Ikra Game");
+                GUI.Label(new Rect(280f, 155f, 100f, 25f), "31 rubles");
+                GUI.Label(new Rect(380f, 155f, 100f, 25f), "02 JAN 23");
 
-                GUI.Label(new Rect(40f, 75f, 100f, 25f), $"Smoothness: {smoothness}");
+                #endregion
 
-                if (GUI.Button(new Rect(140f, 75f, 25f, 25f), "+"))
-                {
-                    if (smoothness < 9)
-                    {
-                        smoothness += 1f;
-                    }
-                }
+                #region Info
+                GUI.Box(new Rect(10f, 320f, 470f, 25f), "You can hide this menu by pressing the Tilde button (~)");
+                #endregion
             }
         }
 
@@ -208,80 +191,34 @@ namespace SR2MP
                     DontDestroyOnLoad(material);
                     _Beatrix = beatrix;
                     _BeatrixAnimator = _Beatrix.GetComponent<Animator>();
+                    _Beatrix.AddComponent<CharacterController>();
+                    _Beatrix.AddComponent<Movement>();
+                    _Beatrix.AddComponent<Animations>();
+                    _Beatrix.AddComponent<Beatrix>();
                     GameIsLoaded = true;
                     GameLoadCheck = false;
                 }
             }
         }
 
+        public override void OnLateUpdate()
+        {
+
+        }
+
         public override void OnFixedUpdate()
         {
-            if (player == null)
+            if (_Player == null)
             {
-                player = FindObjectOfType<SRCharacterController>();
-                if (player != null)
+                _Player = FindObjectOfType<SRCharacterController>();
+                if (_Player != null)
                 {
-                    _PlayerAnimator = player.GetComponent<Animator>();
+                    _PlayerAnimator = _Player.GetComponent<Animator>();
                     _BeatrixAnimator.avatar = _PlayerAnimator.avatar;
                     _BeatrixAnimator.runtimeAnimatorController = _PlayerAnimator.runtimeAnimatorController;
+                    _Player.gameObject.AddComponent<ReadData>();
                 }
             }
-            else
-            {
-                var pos = player.transform.position;
-                var rot = player.transform.rotation.eulerAngles.y;
-                ClientSend.SendMovement(pos, rot);
-
-                var HM = _PlayerAnimator.GetFloat("HorizontalMovement");
-                var FM = _PlayerAnimator.GetFloat("ForwardMovement");
-                var Yaw = _PlayerAnimator.GetFloat("Yaw");
-                var AS = _PlayerAnimator.GetInteger("AirborneState");
-                var Moving = _PlayerAnimator.GetBool("Moving");
-                var HS = _PlayerAnimator.GetFloat("HorizontalSpeed");
-                var FS = _PlayerAnimator.GetFloat("ForwardSpeed");
-                ClientSend.SendAnimations(HM, FM, Yaw, AS, Moving, HS, FS);
-            }
-
-            if (_Beatrix != null)
-            {
-                _Beatrix.transform.position = Vector3.Lerp(_Beatrix.transform.position, position, 4f * smoothness * Time.fixedDeltaTime);
-
-                var newRotation = Quaternion.Euler(_Beatrix.transform.rotation.eulerAngles.x, rotation, _Beatrix.transform.rotation.eulerAngles.z);
-                _Beatrix.transform.rotation = Quaternion.Lerp(_Beatrix.transform.rotation, newRotation, 4f * smoothness * Time.fixedDeltaTime);
-
-                _BeatrixAnimator.SetFloat("HorizontalMovement", f1);
-                _BeatrixAnimator.SetFloat("ForwardMovement", f2);
-                _BeatrixAnimator.SetFloat("Yaw", f3);
-                _BeatrixAnimator.SetInteger("AirborneState", i1);
-                _BeatrixAnimator.SetBool("Moving", b1);
-                _BeatrixAnimator.SetFloat("HorizontalSpeed", f4);
-                _BeatrixAnimator.SetFloat("ForwardSpeed", f5);
-            }
         }
-    }
-
-    public class Input
-    {
-        [DllImport("user32.dll")]
-        static extern int GetAsyncKeyState(int vKey);
-
-        public static bool GetKeyDown(int key)
-        {
-            if (0 != (GetAsyncKeyState(key) & 0x8000))
-            {
-                if (!input)
-                {
-                    input = true;
-                    return true;
-                }
-            }
-            else
-            {
-                input = false;
-            }
-            return false;
-        }
-
-        static bool input;
     }
 }
