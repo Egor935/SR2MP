@@ -1,7 +1,7 @@
-1/DragonCoreGS/4256 rubles
-2/CrazyAppleSauceGuy/3000 rubles
-3/Baloneyfuel/1000 rubles
-4/PinkTarr/896 rubles
-5/Evan Ranger/500 rubles
-6/Pandziarz/165 rubles
-7/Ikra Game/31 rubles
+DragonCoreGS/4256 rubles
+CrazyAppleSauceGuy/3000 rubles
+Baloneyfuel/1000 rubles
+PinkTarr/896 rubles
+Evan Ranger/500 rubles
+Pandziarz/165 rubles
+Ikra Game/31 rubles
