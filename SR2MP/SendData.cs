@@ -53,5 +53,41 @@ namespace SR2MP
                 Networking.SendTCPData(_packet);
             }
         }
+
+        public static void RequestData()
+        {
+            using (Packet _packet = new Packet((int)Packets.RequestData))
+            {
+                Networking.SendUDPData(_packet);
+            }
+        }
+
+        public static void DataRequested()
+        {
+            SteamLobby.requestedDataSent = true;
+
+            using (Packet _packet = new Packet((int)Packets.DataRequested))
+            {
+                Networking.SendTCPData(_packet);
+            }
+        }
+
+        public static void SendCameraAngle(float angle)
+        {
+            using (Packet _packet = new Packet((int)Packets.CameraAngle))
+            {
+                _packet.Write(angle);
+                Networking.SendUDPData(_packet);
+            }
+        }
+
+        public static void SendVacconeState(bool vacMode)
+        {
+            using (Packet _packet = new Packet((int)Packets.VacconeState))
+            {
+                _packet.Write(vacMode);
+                Networking.SendUDPData(_packet);
+            }
+        }
     }
 }

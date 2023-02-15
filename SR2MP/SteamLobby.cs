@@ -1,4 +1,5 @@
 ﻿using Il2CppMonomiPark.SlimeRancher.Platform.Steam;
+using Il2CppMonomiPark.SlimeRancher.SceneManagement;
 using MelonLoader;
 using Steamworks;
 using System;
@@ -20,13 +21,18 @@ namespace SR2MP
 
         public static CSteamID LobbyId { get; private set; }
         public static CSteamID receiver;
+        public static CSteamID mySteamID;
 
         public static int myId;
         public static int ping;
         public static bool getSecondPlayer = true;
 
+        public static bool tryToRequestData = true;
+        public static bool requestedDataSent;
+
         public void Start()
         {
+            mySteamID = SteamUser.GetSteamID();
             //lobbyCreated = Callback<LobbyCreated_t>.Create(new Callback<LobbyCreated_t>.DispatchDelegate(OnLobbyCreated));
             //gameLobbyJoinRequested = Callback<GameLobbyJoinRequested_t>.Create(new Callback<GameLobbyJoinRequested_t>.DispatchDelegate(OnGameLobbyJoinRequested));
             //lobbyEntered = Callback<LobbyEnter_t>.Create(new Callback<LobbyEnter_t>.DispatchDelegate(OnLobbyEntered));
@@ -58,6 +64,27 @@ namespace SR2MP
                 }
             }
             */
+        }
+
+        public void FixedUpdate()
+        {
+            if (tryToRequestData)
+            {
+                if (receiver != CSteamID.Nil)
+                {
+                    if (receiver.m_SteamID > mySteamID.m_SteamID)
+                    {
+                        if (SRSingleton<SystemContext>.Instance.SceneLoader.currentSceneGroup.isGameplay)
+                        {
+                            SendData.RequestData();
+                        }
+                    }
+                    else
+                    {
+                        tryToRequestData = false;
+                    }
+                }
+            }
         }
 
         public static void CreateLobby()

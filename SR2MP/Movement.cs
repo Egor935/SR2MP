@@ -14,7 +14,7 @@ namespace SR2MP
 
         CharacterController _CC;
 
-        public Vector3 _Position;
+        public Vector3 _Position = new Vector3(529.1114f, 17.11f, 338.0007f);
         public float _Rotation;
         public Vector3 _Speed;
 

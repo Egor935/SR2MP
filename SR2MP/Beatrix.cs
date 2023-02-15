@@ -15,6 +15,7 @@ namespace SR2MP
 
         public Movement _Movement;
         public Animations _Animations;
+        public Vacpack _Vacpack;
 
         public void Start()
         {
@@ -22,6 +23,7 @@ namespace SR2MP
 
             _Movement = GetComponent<Movement>();
             _Animations = GetComponent<Animations>();
+            _Vacpack = GetComponent<Vacpack>();
         }
 
         public void Update()

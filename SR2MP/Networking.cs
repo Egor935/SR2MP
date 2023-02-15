@@ -67,6 +67,10 @@ namespace SR2MP
                 { (int)Packets.Movement, HandleData.MovementReceived },
                 { (int)Packets.Animations, HandleData.AnimationsReceived },
                 { (int)Packets.Time, HandleData.TimeReceived },
+                { (int)Packets.RequestData, HandleData.HandleRequestedData },
+                { (int)Packets.DataRequested, HandleData.HandleDataRequested },
+                { (int)Packets.CameraAngle, HandleData.HandleCameraAngle },
+                { (int)Packets.VacconeState, HandleData.HandleVacconeState },
             };
             MelonLogger.Msg("Initialized packets.");
         }

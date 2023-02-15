@@ -1,9 +1,12 @@
-﻿using Il2CppMonomiPark.SlimeRancher.Player.CharacterController;
+﻿using Il2CppMono;
+using Il2CppMonomiPark.SlimeRancher.Player.CharacterController;
+using Il2CppMonomiPark.SlimeRancher.SceneManagement;
 using MelonLoader;
 using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using UnhollowerRuntimeLib;
@@ -29,17 +32,25 @@ namespace SR2MP
         bool GameIsLoaded;
 
         public static bool menuState = true;
+
+        public static bool steamIsAvailable;
+
+        public WebClient webClient = new WebClient();
+        public int _DonatorsCount;
+        public List<string> _DonatorNames = new List<string>();
+        public List<string> _DonatorAmounts = new List<string>();
         #endregion
 
         [Obsolete]
         public override void OnApplicationStart()
         {
-            SteamAPI.Init();
+            steamIsAvailable = SteamAPI.Init();
             
             ClassInjector.RegisterTypeInIl2Cpp<SteamLobby>();
             ClassInjector.RegisterTypeInIl2Cpp<ReadData>();
             ClassInjector.RegisterTypeInIl2Cpp<Movement>();
             ClassInjector.RegisterTypeInIl2Cpp<Animations>();
+            ClassInjector.RegisterTypeInIl2Cpp<Vacpack>();
             ClassInjector.RegisterTypeInIl2Cpp<Beatrix>();
         }
 
@@ -50,6 +61,8 @@ namespace SR2MP
             var _NM = new GameObject("NetworkManager");
             DontDestroyOnLoad(_NM);
             _NM.AddComponent<SteamLobby>();
+
+            DownloadListOfDonators();
         }
 
         int _FriendsCount;
@@ -65,108 +78,100 @@ namespace SR2MP
             if (menuState)
             {
                 GUI.color = Color.cyan;
-                GUI.skin.box.normal.textColor = Color.white;
+                GUI.skin.label.alignment = TextAnchor.MiddleCenter;
 
                 #region Main
 
                 GUI.Box(new Rect(10f, 10f, 160f, 300f), "<b>SR2MP</b>");
 
-                if ((_FriendsCount == 0) || _FriendSelected)
+                if (steamIsAvailable)
                 {
-                    if (GUI.Button(new Rect(15f, 35f, 150f, 25f), "Select friend"))
+                    if ((_FriendsCount == 0) || _FriendSelected)
                     {
-                        _FriendsCount = SteamFriends.GetFriendCount(EFriendFlags.k_EFriendFlagImmediate);
-                        //MelonLogger.Msg($"Friends count: {_FriendsCount}");
-                        for (int i = 0; i < _FriendsCount; i++)
+                        if (GUI.Button(new Rect(15f, 35f, 150f, 25f), "Select friend"))
                         {
-                            var id = SteamFriends.GetFriendByIndex(i, EFriendFlags.k_EFriendFlagImmediate);
-                            _FriendsIDs.Add(id);
-                            var name = SteamFriends.GetFriendPersonaName(id);
-                            _FriendsNames.Add(name);
-
-                            //MelonLogger.Msg($"{name}: {id.m_SteamID}");
-                            _FriendSelected = false;
-                        }
-                    }
-                }
-
-                else
-                {
-                    if (GUI.Button(new Rect(15f, 35f, 150f, 25f), "Up ▲"))
-                    {
-                        if (_StartingPoint > 0)
-                        {
-                            _StartingPoint -= 1;
-                        }
-                    }
-
-                    for (int i = _StartingPoint; i < _StartingPoint + 7; i++)
-                    {
-                        if (GUI.Button(new Rect(15f, 65f + 30f * (i - _StartingPoint), 150f, 25f), _FriendsNames[i]))
-                        {
-                            var id = _FriendsIDs[i];
-                            SteamLobby.receiver = id;
-                            MelonLogger.Msg(id.m_SteamID);
-
-                            _FriendSelected = true;
-                            _SelectedFriend = i;
-                        }
-                    }
-
-                    if (GUI.Button(new Rect(15f, 275f, 150f, 25f), "Down ▼"))
-                    {
-                        if (_FriendsCount > 0)
-                        {
-                            if (_StartingPoint < (_FriendsCount - 7))
+                            _FriendsCount = SteamFriends.GetFriendCount(EFriendFlags.k_EFriendFlagImmediate);
+                            //MelonLogger.Msg($"Friends count: {_FriendsCount}");
+                            for (int i = 0; i < _FriendsCount; i++)
                             {
-                                _StartingPoint += 1;
+                                var id = SteamFriends.GetFriendByIndex(i, EFriendFlags.k_EFriendFlagImmediate);
+                                _FriendsIDs.Add(id);
+                                var name = SteamFriends.GetFriendPersonaName(id);
+                                _FriendsNames.Add(name);
+
+                                //MelonLogger.Msg($"{name}: {id.m_SteamID}");
+                                _FriendSelected = false;
                             }
                         }
                     }
-                }
 
-                if (_FriendSelected)
+                    else
+                    {
+                        if (GUI.Button(new Rect(15f, 35f, 150f, 25f), "Up ▲"))
+                        {
+                            if (_StartingPoint > 0)
+                            {
+                                _StartingPoint -= 1;
+                            }
+                        }
+
+                        for (int i = _StartingPoint; i < _StartingPoint + 7; i++)
+                        {
+                            if (GUI.Button(new Rect(15f, 65f + 30f * (i - _StartingPoint), 150f, 25f), _FriendsNames[i]))
+                            {
+                                var id = _FriendsIDs[i];
+                                SteamLobby.receiver = id;
+                                MelonLogger.Msg(id.m_SteamID);
+
+                                _FriendSelected = true;
+                                _SelectedFriend = i;
+                            }
+                        }
+
+                        if (GUI.Button(new Rect(15f, 275f, 150f, 25f), "Down ▼"))
+                        {
+                            if (_FriendsCount > 0)
+                            {
+                                if (_StartingPoint < (_FriendsCount - 7))
+                                {
+                                    _StartingPoint += 1;
+                                }
+                            }
+                        }
+                    }
+
+                    if (_FriendSelected)
+                    {
+                        GUI.Label(new Rect(15f, 65f, 150f, 25f), "Selected friend:");
+                        GUI.Label(new Rect(15f, 95f, 150f, 25f), _FriendsNames[_SelectedFriend]);
+                    }
+                }
+                else
                 {
-                    GUI.Label(new Rect(15f, 65f, 150f, 25f), "Selected friend:");
-                    GUI.Label(new Rect(15f, 95f, 150f, 25f), _FriendsNames[_SelectedFriend]);
+                    GUI.Label(new Rect(15f, 35f, 150f, 250f), "This mod is currently unavailable for other versions except Steam");
                 }
-
 
                 #endregion
 
                 #region Donators
 
                 GUI.Box(new Rect(180f, 10f, 300f, 300f), "<b>Donators</b>");
+                
+                GUI.Label(new Rect(180f, 35f, 150f, 25f), "Name");
+                GUI.Label(new Rect(330f, 35f, 150f, 25f), "Amount");
 
-                GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-                GUI.Label(new Rect(180f, 35f, 100f, 25f), "Name");
-                GUI.Label(new Rect(280f, 35f, 100f, 25f), "Amount");
-                GUI.Label(new Rect(380f, 35f, 100f, 25f), "Date");
-
-                //1 donator
-                GUI.Label(new Rect(180f, 65f, 100f, 25f), "DragonCoreGS");
-                GUI.Label(new Rect(280f, 65f, 100f, 25f), "1500 rubles");
-                GUI.Label(new Rect(380f, 65f, 100f, 25f), "01 FEB 23");
-
-                //2 donator
-                GUI.Label(new Rect(180f, 95f, 100f, 25f), "Evan Ranger");
-                GUI.Label(new Rect(280f, 95f, 100f, 25f), "500 rubles");
-                GUI.Label(new Rect(380f, 95f, 100f, 25f), "01 DEC 22");
-
-                //3 donator
-                GUI.Label(new Rect(180f, 125f, 100f, 25f), "PinkTarr");
-                GUI.Label(new Rect(280f, 125f, 100f, 25f), "200 rubles");
-                GUI.Label(new Rect(380f, 125f, 100f, 25f), "08 FEB 23");
-
-                //4 donator
-                GUI.Label(new Rect(180f, 155f, 100f, 25f), "Ikra Game");
-                GUI.Label(new Rect(280f, 155f, 100f, 25f), "31 rubles");
-                GUI.Label(new Rect(380f, 155f, 100f, 25f), "02 JAN 23");
+                for (int i = 0; i < _DonatorsCount; i++)
+                {
+                    GUI.Label(new Rect(180f, 65f + 30f * i, 150f, 25f), _DonatorNames[i]);
+                    GUI.Label(new Rect(330f, 65f + 30f * i, 150f, 25f), _DonatorAmounts[i]);
+                }
 
                 #endregion
 
                 #region Info
+
                 GUI.Box(new Rect(10f, 320f, 470f, 25f), "You can hide this menu by pressing the Tilde button (~)");
+
                 #endregion
             }
         }
@@ -194,6 +199,7 @@ namespace SR2MP
                     _Beatrix.AddComponent<CharacterController>();
                     _Beatrix.AddComponent<Movement>();
                     _Beatrix.AddComponent<Animations>();
+                    _Beatrix.AddComponent<Vacpack>();
                     _Beatrix.AddComponent<Beatrix>();
                     GameIsLoaded = true;
                     GameLoadCheck = false;
@@ -216,8 +222,22 @@ namespace SR2MP
                     _PlayerAnimator = _Player.GetComponent<Animator>();
                     _BeatrixAnimator.avatar = _PlayerAnimator.avatar;
                     _BeatrixAnimator.runtimeAnimatorController = _PlayerAnimator.runtimeAnimatorController;
+                    _BeatrixAnimator.updateMode = AnimatorUpdateMode.AnimatePhysics;
                     _Player.gameObject.AddComponent<ReadData>();
                 }
+            }
+        }
+        
+        public void DownloadListOfDonators()
+        {
+            var _rawFile = webClient.DownloadString("https://raw.githubusercontent.com/Egor935/Slime-Rancher-2-Multiplayer/main/Donators.txt");
+            var _Donators = _rawFile.Split('\n');
+            _DonatorsCount = _Donators.Length;
+            foreach (var _Donator in _Donators)
+            {
+                var _Info = _Donator.Split('/');
+                _DonatorNames.Add(_Info[0]);
+                _DonatorAmounts.Add(_Info[1]);
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using Il2CppMonomiPark.SlimeRancher.DataModel;
+using Il2CppMonomiPark.SlimeRancher.Persist;
 using MelonLoader;
 using System;
 using System.Collections.Generic;
@@ -12,8 +13,6 @@ namespace SR2MP
 {
     public class HandleData
     {
-        public static bool _TimeSynced;
-
         public static void WelcomeReceived(Packet _packet)
         {
             var msg = _packet.ReadString();
@@ -26,13 +25,6 @@ namespace SR2MP
             movement._Position = _packet.ReadVector3();
             movement._Rotation = _packet.ReadFloat();
             movement._Speed = _packet.ReadVector3();
-
-            if (!_TimeSynced)
-            {
-                double time = FindObjectOfType<TimeDirector>().worldModel.worldTime;
-                SendData.SendTime(time);
-                _TimeSynced = true;
-            }
         }
 
         public static void AnimationsReceived(Packet _packet)
@@ -49,13 +41,34 @@ namespace SR2MP
 
         public static void TimeReceived(Packet _packet)
         {
-            var time = _packet.ReadDouble();
-            var worldModel = FindObjectOfType<TimeDirector>().worldModel;
-            if (time > worldModel.worldTime)
+            FindObjectOfType<TimeDirector>().worldModel.worldTime = _packet.ReadDouble();
+        }
+
+        public static void HandleRequestedData(Packet _packet)
+        {
+            if (!SteamLobby.requestedDataSent)
             {
-                worldModel.worldTime = time;
+                SendData.DataRequested();
+
+                double time = FindObjectOfType<TimeDirector>().worldModel.worldTime;
+                SendData.SendTime(time);
             }
-            _TimeSynced = true;
+        }
+
+        public static void HandleDataRequested(Packet _packet)
+        {
+            SteamLobby.tryToRequestData = false;
+            MelonLogger.Msg("Data requested");
+        }
+
+        public static void HandleCameraAngle(Packet _packet)
+        {
+            Beatrix.instance._Vacpack._CameraAngle = _packet.ReadFloat();
+        }
+
+        public static void HandleVacconeState(Packet _packet)
+        {
+            Beatrix.instance._Vacpack.vacMode = _packet.ReadBool();
         }
     }
 }

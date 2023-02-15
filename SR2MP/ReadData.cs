@@ -14,6 +14,8 @@ namespace SR2MP
 
         SRCharacterController _Player;
         Animator _PlayerAnimator;
+        SRCameraController _SRCameraController;
+        Animator _VacconeAnimator;
 
         Vector3 _Position;
         float _Rotation;
@@ -27,10 +29,15 @@ namespace SR2MP
         float _HS;
         float _FS;
 
+        float _CameraAngle;
+        bool _VacMode;
+
         public void Start()
         {
             _Player = Main.Instance._Player;
             _PlayerAnimator = Main.Instance._PlayerAnimator;
+            _SRCameraController = _Player.cameraController;
+            _VacconeAnimator = GameObject.Find("PlayerCameraKCC/First Person Objects/vac shape/Vaccone Prefab").GetComponent<Animator>();
         }
 
         public void Update()
@@ -45,6 +52,12 @@ namespace SR2MP
 
             ReadAnimations();
             SendData.SendAnimations(_HM, _FM, _Yaw, _AS, _Moving, _HS, _FS);
+
+            ReadCameraAngle();
+            SendData.SendCameraAngle(_CameraAngle);
+
+            ReadVacconeState();
+            SendData.SendVacconeState(_VacMode);
         }
 
         void ReadMovement()
@@ -63,6 +76,16 @@ namespace SR2MP
             _Moving = _PlayerAnimator.GetBool("Moving");
             _HS = _PlayerAnimator.GetFloat("HorizontalSpeed");
             _FS = _PlayerAnimator.GetFloat("ForwardSpeed");
+        }
+
+        void ReadCameraAngle()
+        {
+            _CameraAngle = _SRCameraController.targetVerticalAngle;
+        }
+
+        void ReadVacconeState()
+        {
+            _VacMode = _VacconeAnimator.GetBool("vacMode");
         }
     }
 }

@@ -9,7 +9,11 @@ public enum Packets
     Welcome,
     Movement,
     Animations,
-    Time
+    Time,
+    RequestData,
+    DataRequested,
+    CameraAngle,
+    VacconeState
 }
 
 public class Packet : IDisposable
