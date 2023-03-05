@@ -93,6 +93,7 @@
     <Compile Include="Networking.cs" />
     <Compile Include="Packets.cs" />
     <Compile Include="Beatrix.cs" />
+    <Compile Include="Patches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadData.cs" />
     <Compile Include="SendData.cs" />

@@ -63,14 +63,17 @@ namespace SR2MP
         {
             packetHandlers = new Dictionary<int, PacketHandler>()
             {
+                { (int)Packets.Connect, HandleData.ConnectionReceived },
                 { (int)Packets.Welcome, HandleData.WelcomeReceived },
                 { (int)Packets.Movement, HandleData.MovementReceived },
                 { (int)Packets.Animations, HandleData.AnimationsReceived },
-                { (int)Packets.Time, HandleData.TimeReceived },
-                { (int)Packets.RequestData, HandleData.HandleRequestedData },
-                { (int)Packets.DataRequested, HandleData.HandleDataRequested },
+                { (int)Packets.Time, HandleData.HandleTime },
                 { (int)Packets.CameraAngle, HandleData.HandleCameraAngle },
                 { (int)Packets.VacconeState, HandleData.HandleVacconeState },
+                { (int)Packets.SaveRequest, HandleData.SaveRequested },
+                { (int)Packets.Save, HandleData.HandleSave },
+                { (int)Packets.GameMode, HandleData.HandleGameModeSwitch },
+                { (int)Packets.TimeRequest, HandleData.TimeRequested },
             };
             MelonLogger.Msg("Initialized packets.");
         }

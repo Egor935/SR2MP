@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using static SR2MP.HandleData;
 
 namespace SR2MP
 {
@@ -25,17 +24,14 @@ namespace SR2MP
 
         public void Update()
         {
-            _CC.SimpleMove(_Speed);
-        }
-
-        public void LateUpdate()
-        {
             if (_Position != this.transform.position)
             {
                 this.transform.position = _Position;
             }
 
             this.transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, _Rotation, transform.rotation.eulerAngles.z);
+
+            _CC.SimpleMove(_Speed);
         }
     }
 }

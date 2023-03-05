@@ -1,5 +1,7 @@
 ﻿using Il2CppMonomiPark.SlimeRancher.Platform.Steam;
 using Il2CppMonomiPark.SlimeRancher.SceneManagement;
+using Il2CppMonomiPark.SlimeRancher.UI;
+using Il2CppSystem.Reflection;
 using MelonLoader;
 using Steamworks;
 using System;
@@ -7,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnhollowerRuntimeLib;
 using UnityEngine;
 
 namespace SR2MP
@@ -20,22 +23,22 @@ namespace SR2MP
         Callback<LobbyEnter_t> lobbyEntered;
 
         public static CSteamID LobbyId { get; private set; }
+
         public static CSteamID receiver;
-        public static CSteamID mySteamID;
 
-        public static int myId;
-        public static int ping;
-        public static bool getSecondPlayer = true;
+        public static bool tryToConnect = true;
 
-        public static bool tryToRequestData = true;
-        public static bool requestedDataSent;
+        public static bool secondPlayerConnected;
+
+        public static bool friendInGame;
 
         public void Start()
         {
-            mySteamID = SteamUser.GetSteamID();
-            //lobbyCreated = Callback<LobbyCreated_t>.Create(new Callback<LobbyCreated_t>.DispatchDelegate(OnLobbyCreated));
-            //gameLobbyJoinRequested = Callback<GameLobbyJoinRequested_t>.Create(new Callback<GameLobbyJoinRequested_t>.DispatchDelegate(OnGameLobbyJoinRequested));
-            //lobbyEntered = Callback<LobbyEnter_t>.Create(new Callback<LobbyEnter_t>.DispatchDelegate(OnLobbyEntered));
+            //mySteamID = SteamUser.GetSteamID();
+
+            //lobbyCreated = Callback<LobbyCreated_t>.Create((Callback<LobbyCreated_t>.DispatchDelegate)OnLobbyCreated);
+            //gameLobbyJoinRequested = Callback<GameLobbyJoinRequested_t>.Create((Callback<GameLobbyJoinRequested_t>.DispatchDelegate)OnGameLobbyJoinRequested);
+            //lobbyEntered = Callback<LobbyEnter_t>.Create((Callback<LobbyEnter_t>.DispatchDelegate)OnLobbyEntered);
 
             Networking.InitializeClientData();
         }
@@ -44,45 +47,23 @@ namespace SR2MP
         public void Update()
         {
             Networking.ListenData();
-
-            /*
-            if (getSecondPlayer)
-            {
-                if (myId == 0)
-                {
-                    var secondPlayer = SteamMatchmaking.GetLobbyMemberByIndex(LobbyId, 1);
-                    if (secondPlayer != CSteamID.Nil)
-                    {
-                        receiver = secondPlayer;
-                        SendData.SendWelcome("Welcome to the server");
-                        getSecondPlayer = false;
-                    }
-                }
-                else
-                {
-                    getSecondPlayer = false;
-                }
-            }
-            */
         }
 
         public void FixedUpdate()
         {
-            if (tryToRequestData)
+            ReadGameMode();
+            if (_GameMode != _GameModeCached)
+            {
+                SendData.SendGameModeSwitch(_GameMode);
+                _GameModeCached = _GameMode;
+            }
+
+            if (tryToConnect)
             {
                 if (receiver != CSteamID.Nil)
                 {
-                    if (receiver.m_SteamID > mySteamID.m_SteamID)
-                    {
-                        if (SRSingleton<SystemContext>.Instance.SceneLoader.currentSceneGroup.isGameplay)
-                        {
-                            SendData.RequestData();
-                        }
-                    }
-                    else
-                    {
-                        tryToRequestData = false;
-                    }
+                    var inGame = SRSingleton<SystemContext>.Instance.SceneLoader.CurrentSceneGroup.isGameplay;
+                    SendData.SendConnection(inGame);
                 }
             }
         }
@@ -92,7 +73,7 @@ namespace SR2MP
             SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypeFriendsOnly, 2);
         }
 
-        public void OnLobbyCreated(LobbyCreated_t callback)
+        public static void OnLobbyCreated(LobbyCreated_t callback)
         {
             if (callback.m_eResult != EResult.k_EResultOK)
             {
@@ -114,16 +95,16 @@ namespace SR2MP
         {
             MelonLogger.Msg("You have successefully joined the lobby");
             LobbyId = new CSteamID(callback.m_ulSteamIDLobby);
+        }
 
-            if (SteamMatchmaking.GetLobbyMemberByIndex(LobbyId, 0) == SteamUser.GetSteamID())
+        bool _GameMode;
+        bool _GameModeCached;
+        void ReadGameMode()
+        {
+            var _SystemContext = SRSingleton<SystemContext>.Instance;
+            if (_SystemContext != null)
             {
-                myId = 0;
-            }
-            else
-            {
-                myId = 1;
-                receiver = SteamMatchmaking.GetLobbyMemberByIndex(LobbyId, 0);
-                //SendData.SendWelcome($"Player {SteamFriends.GetPersonaName()} successefully connected");
+                _GameMode = _SystemContext.SceneLoader.CurrentSceneGroup.isGameplay;
             }
         }
     }

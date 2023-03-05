@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Il2CppSystem.IO;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,15 @@ namespace SR2MP
 {
     public class SendData
     {
+        public static void SendConnection(bool inGame)
+        {
+            using (Packet _packet = new Packet((int)Packets.Connect))
+            {
+                _packet.Write(inGame);
+                Networking.SendUDPData(_packet);
+            }
+        }
+
         public static void SendWelcome(string msg)
         {
             using (Packet _packet = new Packet((int)Packets.Welcome))
@@ -54,24 +64,6 @@ namespace SR2MP
             }
         }
 
-        public static void RequestData()
-        {
-            using (Packet _packet = new Packet((int)Packets.RequestData))
-            {
-                Networking.SendUDPData(_packet);
-            }
-        }
-
-        public static void DataRequested()
-        {
-            SteamLobby.requestedDataSent = true;
-
-            using (Packet _packet = new Packet((int)Packets.DataRequested))
-            {
-                Networking.SendTCPData(_packet);
-            }
-        }
-
         public static void SendCameraAngle(float angle)
         {
             using (Packet _packet = new Packet((int)Packets.CameraAngle))
@@ -87,6 +79,42 @@ namespace SR2MP
             {
                 _packet.Write(vacMode);
                 Networking.SendUDPData(_packet);
+            }
+        }
+
+        public static void RequestSave()
+        {
+            using (Packet _packet = new Packet((int)Packets.SaveRequest))
+            {
+                Networking.SendTCPData(_packet);
+            }
+        }
+
+        public static void SendSave(MemoryStream save)
+        {
+            using (Packet _packet = new Packet((int)Packets.Save))
+            {
+                var arraySave = save.ToArray();
+                _packet.Write(arraySave.Length);
+                _packet.Write(arraySave);
+                Networking.SendTCPData(_packet);
+            }
+        }
+
+        public static void SendGameModeSwitch(bool state)
+        {
+            using (Packet _packet = new Packet((int)Packets.GameMode))
+            {
+                _packet.Write(state);
+                Networking.SendTCPData(_packet);
+            }
+        }
+
+        public static void RequestTime()
+        {
+            using (Packet _packet = new Packet((int)Packets.TimeRequest))
+            {
+                Networking.SendTCPData(_packet);
             }
         }
     }
