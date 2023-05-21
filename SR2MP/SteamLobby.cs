@@ -1,15 +1,10 @@
-﻿using Il2CppMonomiPark.SlimeRancher.Platform.Steam;
-using Il2CppMonomiPark.SlimeRancher.SceneManagement;
-using Il2CppMonomiPark.SlimeRancher.UI;
-using Il2CppSystem.Reflection;
-using MelonLoader;
-using Steamworks;
+﻿using Il2Cpp;
+using Il2CppSteamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UnhollowerRuntimeLib;
 using UnityEngine;
 
 namespace SR2MP
@@ -18,38 +13,168 @@ namespace SR2MP
     {
         public SteamLobby(IntPtr ptr) : base(ptr) { }
 
-        Callback<LobbyCreated_t> lobbyCreated;
-        Callback<GameLobbyJoinRequested_t> gameLobbyJoinRequested;
-        Callback<LobbyEnter_t> lobbyEntered;
+        public static SteamLobby Instance;
 
-        public static CSteamID LobbyId { get; private set; }
+        //Steam
+        public bool SteamIsAvailable;
+        public CSteamID Receiver;
 
-        public static CSteamID receiver;
+        //Stuff
+        public bool TryToConnect = true;
+        public bool SecondPlayerConnected;
+        public bool FriendInGame;
+        public bool JoinedTheGame;
 
-        public static bool tryToConnect = true;
+        //Friends
+        private int friendsCount;
+        private List<CSteamID> friendsIDs = new List<CSteamID>();
+        private List<string> friendsNames = new List<string>();
+        private int startingPoint;
+        private bool friendSelected;
+        private int selectedFriend;
+        private bool noFriends;
 
-        public static bool secondPlayerConnected;
-
-        public static bool friendInGame;
-
-        public void Start()
+        void OnGUI()
         {
-            //mySteamID = SteamUser.GetSteamID();
+            if (Main.Instance.MenuState)
+            {
+                GUI.color = Color.cyan;
+                GUI.skin.label.alignment = TextAnchor.MiddleCenter;
 
-            //lobbyCreated = Callback<LobbyCreated_t>.Create((Callback<LobbyCreated_t>.DispatchDelegate)OnLobbyCreated);
-            //gameLobbyJoinRequested = Callback<GameLobbyJoinRequested_t>.Create((Callback<GameLobbyJoinRequested_t>.DispatchDelegate)OnGameLobbyJoinRequested);
-            //lobbyEntered = Callback<LobbyEnter_t>.Create((Callback<LobbyEnter_t>.DispatchDelegate)OnLobbyEntered);
+                GUI.Box(new Rect(10f, 10f, 160f, 300f), "<b>SR2MP</b>");
 
-            Networking.InitializeClientData();
+                if (SteamIsAvailable)
+                {
+                    if (noFriends)
+                    {
+                        GUI.Label(new Rect(15f, 35f, 150f, 250f), "No friends found");
+                        return;
+                    }
+
+                    if ((friendsCount == 0) || friendSelected)
+                    {
+                        if (GUI.Button(new Rect(15f, 35f, 150f, 25f), "Select friend"))
+                        {
+                            friendsCount = SteamFriends.GetFriendCount(EFriendFlags.k_EFriendFlagImmediate);
+
+                            if (friendsCount > 0)
+                            {
+                                for (int i = 0; i < friendsCount; i++)
+                                {
+                                    var id = SteamFriends.GetFriendByIndex(i, EFriendFlags.k_EFriendFlagImmediate);
+                                    friendsIDs.Add(id);
+                                    var name = SteamFriends.GetFriendPersonaName(id);
+                                    friendsNames.Add(name);
+
+                                    friendSelected = false;
+                                }
+                            }
+                            else
+                            {
+                                noFriends = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (friendsCount > 9)
+                        {
+                            //Up
+                            if (startingPoint > 0)
+                            {
+                                if (GUI.Button(new Rect(15f, 35f, 150f, 25f), "Up ▲"))
+                                {
+                                    startingPoint -= 1;
+                                }
+                            }
+                            else
+                            {
+                                GUI.Label(new Rect(15f, 35f, 150f, 25f), "Up ▲");
+                            }
+
+                            //Friends list
+                            for (int i = startingPoint; i < (startingPoint + 7); i++)
+                            {
+                                if (GUI.Button(new Rect(15f, 65f + 30f * (i - startingPoint), 150f, 25f), friendsNames[i]))
+                                {
+                                    Receiver = friendsIDs[i];
+                                    friendSelected = true;
+                                    selectedFriend = i;
+                                }
+                            }
+
+                            //Down
+                            if (startingPoint < (friendsCount - 7))
+                            {
+                                if (GUI.Button(new Rect(15f, 275f, 150f, 25f), "Down ▼"))
+                                {
+                                    startingPoint += 1;
+                                }
+                            }
+                            else
+                            {
+                                GUI.Label(new Rect(15f, 275f, 150f, 25f), "Down ▼");
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < friendsCount; i++)
+                            {
+                                if (GUI.Button(new Rect(15f, 35f + 30f * i, 150f, 25f), friendsNames[i]))
+                                {
+                                    Receiver = friendsIDs[i];
+                                    friendSelected = true;
+                                    selectedFriend = i;
+                                }
+                            }
+                        }
+                    }
+
+                    if (friendSelected)
+                    {
+                        string connected = SecondPlayerConnected ? "<color=green>YES</color>" : "<color=red>NO</color>";
+                        string inGame = FriendInGame ? "<color=green>YES</color>" : "<color=red>NO</color>";
+                        GUI.Label(new Rect(15f, 65f, 150f, 25f), "Selected friend:");
+                        GUI.Label(new Rect(15f, 95f, 150f, 25f), friendsNames[selectedFriend]);
+                        GUI.Label(new Rect(15f, 125f, 150f, 25f), $"Connected: {connected}");
+                        GUI.Label(new Rect(15f, 155f, 150f, 25f), $"In game: {inGame}");
+
+                        if (!JoinedTheGame)
+                        {
+                            if (FriendInGame)
+                            {
+                                if (!SRSingleton<SystemContext>.Instance.SceneLoader.CurrentSceneGroup.isGameplay)
+                                {
+                                    if (GUI.Button(new Rect(40f, 185f, 100f, 25f), "Join"))
+                                    {
+                                        JoinedTheGame = true;
+                                        SendData.RequestSave();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    GUI.Label(new Rect(15f, 35f, 150f, 250f), "This mod is currently unavailable for other versions except Steam");
+                }
+            }
         }
 
-        // Update is called once per frame
-        public void Update()
+        void Start()
+        {
+            Instance = this;
+            SteamIsAvailable = SteamAPI.Init();
+            Networking.InitializePackets();
+        }
+
+        void Update()
         {
             Networking.ListenData();
         }
 
-        public void FixedUpdate()
+        void FixedUpdate()
         {
             ReadGameMode();
             if (_GameMode != _GameModeCached)
@@ -58,9 +183,9 @@ namespace SR2MP
                 _GameModeCached = _GameMode;
             }
 
-            if (tryToConnect)
+            if (TryToConnect)
             {
-                if (receiver != CSteamID.Nil)
+                if (Receiver != CSteamID.Nil)
                 {
                     var inGame = SRSingleton<SystemContext>.Instance.SceneLoader.CurrentSceneGroup.isGameplay;
                     SendData.SendConnection(inGame);
@@ -68,38 +193,9 @@ namespace SR2MP
             }
         }
 
-        public static void CreateLobby()
-        {
-            SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypeFriendsOnly, 2);
-        }
-
-        public static void OnLobbyCreated(LobbyCreated_t callback)
-        {
-            if (callback.m_eResult != EResult.k_EResultOK)
-            {
-                return;
-            }
-
-            MelonLogger.Msg("Lobby created successefully");
-
-            LobbyId = new CSteamID(callback.m_ulSteamIDLobby);
-        }
-
-        public void OnGameLobbyJoinRequested(GameLobbyJoinRequested_t callback)
-        {
-            MelonLogger.Msg("Request to join lobby");
-            SteamMatchmaking.JoinLobby(callback.m_steamIDLobby);
-        }
-
-        public void OnLobbyEntered(LobbyEnter_t callback)
-        {
-            MelonLogger.Msg("You have successefully joined the lobby");
-            LobbyId = new CSteamID(callback.m_ulSteamIDLobby);
-        }
-
-        bool _GameMode;
-        bool _GameModeCached;
-        void ReadGameMode()
+        private bool _GameMode;
+        private bool _GameModeCached;
+        private void ReadGameMode()
         {
             var _SystemContext = SRSingleton<SystemContext>.Instance;
             if (_SystemContext != null)

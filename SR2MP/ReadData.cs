@@ -1,4 +1,5 @@
 ﻿using Il2CppMonomiPark.SlimeRancher.Player.CharacterController;
+using MelonLoader;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,43 +13,51 @@ namespace SR2MP
     {
         public ReadData(IntPtr ptr) : base(ptr) { }
 
-        SRCharacterController _Player;
-        Animator _PlayerAnimator;
-        SRCameraController _SRCameraController;
-        Animator _VacconeAnimator;
+        private SRCharacterController _Player;
+        private Animator _PlayerAnimator;
+        private SRCameraController _SRCameraController;
+        private Animator _VacconeAnimator;
 
-        Vector3 _Position;
-        float _Rotation;
-        Vector3 _Speed;
+        //Movement
+        private Vector3 _Position;
+        private float _Rotation;
 
-        float _HM;
-        float _FM;
-        float _Yaw;
-        int _AS;
-        bool _Moving;
-        float _HS;
-        float _FS;
+        //Animations
+        private float _HM;
+        private float _FM;
+        private float _Yaw;
+        private int _AS;
+        private bool _Moving;
+        private float _HS;
+        private float _FS;
 
-        float _CameraAngle;
-        bool _VacMode;
+        //Vacpack
+        private float _CameraAngle;
+        private bool _VacMode;
+        private bool _CachedVacMode;
 
-        public void Start()
+        void Start()
         {
-            _Player = Main.Instance._Player;
-            _PlayerAnimator = Main.Instance._PlayerAnimator;
+            _Player = Main.Instance.Player;
+            _PlayerAnimator = Main.Instance.PlayerAnimator;
             _SRCameraController = _Player.cameraController;
             _VacconeAnimator = GameObject.Find("PlayerCameraKCC/First Person Objects/vac shape/Vaccone Prefab").GetComponent<Animator>();
         }
 
-        public void Update()
+        void Update()
         {
-
+            ReadVacconeState();
+            if (_CachedVacMode != _VacMode)
+            {
+                SendData.SendVacconeState(_VacMode);
+                _CachedVacMode = _VacMode;
+            }
         }
 
-        public void FixedUpdate()
+        void FixedUpdate()
         {
             ReadMovement();
-            SendData.SendMovement(_Position, _Rotation, _Speed);
+            SendData.SendMovement(_Position, _Rotation);
 
             ReadAnimations();
             SendData.SendAnimations(_HM, _FM, _Yaw, _AS, _Moving, _HS, _FS);
@@ -56,18 +65,19 @@ namespace SR2MP
             ReadCameraAngle();
             SendData.SendCameraAngle(_CameraAngle);
 
-            ReadVacconeState();
-            SendData.SendVacconeState(_VacMode);
+            if (Main.Instance.SendActors)
+            {
+                SendData.SendSlimes();
+            }
         }
 
-        void ReadMovement()
+        private void ReadMovement()
         {
             _Position = _Player.transform.position;
             _Rotation = _Player.transform.rotation.eulerAngles.y;
-            _Speed = _Player.MovementVector;
         }
 
-        void ReadAnimations()
+        private void ReadAnimations()
         {
             _HM = _PlayerAnimator.GetFloat("HorizontalMovement");
             _FM = _PlayerAnimator.GetFloat("ForwardMovement");
@@ -78,12 +88,12 @@ namespace SR2MP
             _FS = _PlayerAnimator.GetFloat("ForwardSpeed");
         }
 
-        void ReadCameraAngle()
+        private void ReadCameraAngle()
         {
             _CameraAngle = _SRCameraController.targetVerticalAngle;
         }
 
-        void ReadVacconeState()
+        private void ReadVacconeState()
         {
             _VacMode = _VacconeAnimator.GetBool("vacMode");
         }

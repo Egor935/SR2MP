@@ -8,8 +8,17 @@ using UnityEngine;
 
 namespace SR2MP
 {
-    public class SendData
+    public static class SendData
     {
+        public static void SendMessage(string msg)
+        {
+            using (Packet _packet = new Packet((int)Packets.Message))
+            {
+                _packet.Write(msg);
+                Networking.SendTCPData(_packet);
+            }
+        }
+
         public static void SendConnection(bool inGame)
         {
             using (Packet _packet = new Packet((int)Packets.Connect))
@@ -19,22 +28,12 @@ namespace SR2MP
             }
         }
 
-        public static void SendWelcome(string msg)
-        {
-            using (Packet _packet = new Packet((int)Packets.Welcome))
-            {
-                _packet.Write(msg);
-                Networking.SendTCPData(_packet);
-            }
-        }
-
-        public static void SendMovement(Vector3 pos, float rot, Vector3 speed)
+        public static void SendMovement(Vector3 pos, float rot)
         {
             using (Packet _packet = new Packet((int)Packets.Movement))
             {
                 _packet.Write(pos);
                 _packet.Write(rot);
-                _packet.Write(speed);
                 Networking.SendUDPData(_packet);
             }
         }
@@ -55,15 +54,6 @@ namespace SR2MP
             }
         }
 
-        public static void SendTime(double time)
-        {
-            using (Packet _packet = new Packet((int)Packets.Time))
-            {
-                _packet.Write(time);
-                Networking.SendTCPData(_packet);
-            }
-        }
-
         public static void SendCameraAngle(float angle)
         {
             using (Packet _packet = new Packet((int)Packets.CameraAngle))
@@ -78,7 +68,33 @@ namespace SR2MP
             using (Packet _packet = new Packet((int)Packets.VacconeState))
             {
                 _packet.Write(vacMode);
-                Networking.SendUDPData(_packet);
+                Networking.SendTCPData(_packet);
+            }
+        }
+
+        public static void SendGameModeSwitch(bool state)
+        {
+            using (Packet _packet = new Packet((int)Packets.GameMode))
+            {
+                _packet.Write(state);
+                Networking.SendTCPData(_packet);
+            }
+        }
+
+        public static void RequestTime()
+        {
+            using (Packet _packet = new Packet((int)Packets.TimeRequest))
+            {
+                Networking.SendTCPData(_packet);
+            }
+        }
+
+        public static void SendTime(double time)
+        {
+            using (Packet _packet = new Packet((int)Packets.Time))
+            {
+                _packet.Write(time);
+                Networking.SendTCPData(_packet);
             }
         }
 
@@ -101,20 +117,25 @@ namespace SR2MP
             }
         }
 
-        public static void SendGameModeSwitch(bool state)
+        public static void SendSlimes()
         {
-            using (Packet _packet = new Packet((int)Packets.GameMode))
+            using (Packet _packet = new Packet((int)Packets.Slimes))
             {
-                _packet.Write(state);
-                Networking.SendTCPData(_packet);
-            }
-        }
-
-        public static void RequestTime()
-        {
-            using (Packet _packet = new Packet((int)Packets.TimeRequest))
-            {
-                Networking.SendTCPData(_packet);
+                _packet.Write(Main.Instance.SyncingSlimes.Count);
+                foreach (var slime in Main.Instance.SyncingSlimes)
+                {
+                    if (slime != null)
+                    {
+                        _packet.Write(slime.transform.position);
+                        _packet.Write(slime.transform.rotation);
+                    }
+                    else
+                    {
+                        _packet.Write(Vector3.zero);
+                        _packet.Write(Quaternion.identity);
+                    }
+                }
+                Networking.SendUDPData(_packet);
             }
         }
     }

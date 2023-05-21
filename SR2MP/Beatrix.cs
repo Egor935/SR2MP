@@ -11,29 +11,19 @@ namespace SR2MP
     {
         public Beatrix(IntPtr ptr) : base(ptr) { }
 
-        public static Beatrix instance;
+        public static Beatrix Instance;
 
-        public Movement _Movement;
-        public Animations _Animations;
-        public Vacpack _Vacpack;
+        public Movement BeatrixMovement;
+        public Animations BeatrixAnimations;
+        public Vacpack BeatrixVacpack;
 
-        public void Start()
+        void Start()
         {
-            instance = this;
+            Instance = this;
 
-            _Movement = GetComponent<Movement>();
-            _Animations = GetComponent<Animations>();
-            _Vacpack = GetComponent<Vacpack>();
-        }
-
-        public void Update()
-        {
-
-        }
-
-        public void FixedUpdate()
-        {
-
+            BeatrixMovement = GetComponent<Movement>();
+            BeatrixAnimations = GetComponent<Animations>();
+            BeatrixVacpack = GetComponent<Vacpack>();
         }
     }
 }

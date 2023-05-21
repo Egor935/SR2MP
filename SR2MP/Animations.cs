@@ -11,35 +11,30 @@ namespace SR2MP
     {
         public Animations(IntPtr ptr) : base(ptr) { }
 
-        public Animator _Animator;
+        private Animator _Animator;
 
-        public float _HM;
-        public float _FM;
-        public float _Yaw;
-        public int _AS;
-        public bool _Moving;
-        public float _HS;
-        public float _FS;
+        public float HM;
+        public float FM;
+        public float Yaw;
+        public int AS;
+        public bool Moving;
+        public float HS;
+        public float FS;
 
-        public void Start()
+        void Start()
         {
             _Animator = GetComponent<Animator>();
         }
 
-        public void Update()
+        void FixedUpdate()
         {
-
-        }
-
-        public void FixedUpdate()
-        {
-            _Animator.SetFloat("HorizontalMovement", _HM);
-            _Animator.SetFloat("ForwardMovement", _FM);
-            _Animator.SetFloat("Yaw", _Yaw);
-            _Animator.SetInteger("AirborneState", _AS);
-            _Animator.SetBool("Moving", _Moving);
-            _Animator.SetFloat("HorizontalSpeed", _HS);
-            _Animator.SetFloat("ForwardSpeed", _FS);
+            _Animator.SetFloat("HorizontalMovement", HM);
+            _Animator.SetFloat("ForwardMovement", FM);
+            _Animator.SetFloat("Yaw", Yaw);
+            _Animator.SetInteger("AirborneState", AS);
+            _Animator.SetBool("Moving", Moving);
+            _Animator.SetFloat("HorizontalSpeed", HS);
+            _Animator.SetFloat("ForwardSpeed", FS);
         }
     }
 }

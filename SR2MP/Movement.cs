@@ -11,27 +11,22 @@ namespace SR2MP
     {
         public Movement(IntPtr ptr) : base(ptr) { }
 
-        CharacterController _CC;
+        public Vector3 ReceivedPosition = new Vector3(529.1114f, 17.11f, 338.0007f);
+        public float ReceivedRotation;
 
-        public Vector3 _Position = new Vector3(529.1114f, 17.11f, 338.0007f);
-        public float _Rotation;
-        public Vector3 _Speed;
-
-        public void Start()
+        void FixedUpdate()
         {
-            _CC = GetComponent<CharacterController>();
-        }
-
-        public void Update()
-        {
-            if (_Position != this.transform.position)
+            //Update position only when we receive it
+            if (ReceivedPosition != this.transform.position)
             {
-                this.transform.position = _Position;
+                this.transform.position = ReceivedPosition;
             }
 
-            this.transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, _Rotation, transform.rotation.eulerAngles.z);
-
-            _CC.SimpleMove(_Speed);
+            //Update rotation only when we receive it
+            if (ReceivedRotation != this.transform.rotation.eulerAngles.y)
+            {
+                this.transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, ReceivedRotation, transform.rotation.eulerAngles.z);
+            }
         }
     }
 }

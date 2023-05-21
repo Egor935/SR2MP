@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace SR2MP
 {
-    public class Input
+    public static class Input
     {
         [DllImport("user32.dll")]
-        static extern int GetAsyncKeyState(int vKey);
+        private static extern int GetAsyncKeyState(int vKey);
 
         public static bool GetKeyDown(int key)
         {
@@ -29,6 +29,6 @@ namespace SR2MP
             return false;
         }
 
-        static bool BackQuote;
+        private static bool BackQuote;
     }
 }

@@ -6,17 +6,18 @@ using UnityEngine;
 
 public enum Packets
 {
+    Message,
     Connect,
-    Welcome,
     Movement,
     Animations,
-    Time,
     CameraAngle,
     VacconeState,
+    GameMode,
+    TimeRequest,
+    Time,
     SaveRequest,
     Save,
-    GameMode,
-    TimeRequest
+    Slimes
 }
 
 public class Packet : IDisposable

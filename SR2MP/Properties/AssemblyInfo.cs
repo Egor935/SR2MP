@@ -1,4 +1,5 @@
 ﻿using MelonLoader;
+using SR2MP;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -35,4 +36,4 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: MelonInfo(typeof(SR2MP.Main), "Slime Rancher 2 Multiplayer", SR2MP.Main.version, "Egor")]
+[assembly: MelonInfo(typeof(Loader), "Slime Rancher 2 Multiplayer", Loader.ModVersion, "Egor")]

@@ -1,24 +1,18 @@
-﻿using MelonLoader;
-using Steamworks;
+﻿using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using Il2CppSteamworks;
+using MelonLoader;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UnhollowerBaseLib;
-using UnityEngine;
 
 namespace SR2MP
 {
-    public class Networking : MonoBehaviour
+    public static class Networking
     {
         private delegate void PacketHandler(Packet _packet);
         private static Dictionary<int, PacketHandler> packetHandlers;
-
-        void Start()
-        {
-            InitializeClientData();
-        }
 
         public static void ListenData()
         {
@@ -40,18 +34,17 @@ namespace SR2MP
         public static void SendTCPData(Packet packet)
         {
             byte[] data = packet.ToArray();
-            SteamNetworking.SendP2PPacket(SteamLobby.receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendReliable, 0);
+            SteamNetworking.SendP2PPacket(SteamLobby.Instance.Receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendReliable, 0);
         }
 
         public static void SendUDPData(Packet packet)
         {
             byte[] data = packet.ToArray();
-            SteamNetworking.SendP2PPacket(SteamLobby.receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendUnreliable, 0);
+            SteamNetworking.SendP2PPacket(SteamLobby.Instance.Receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendUnreliable, 0);
         }
 
-        public static void HandleReceivedData(byte[] _data)
+        private static void HandleReceivedData(byte[] _data)
         {
-            //MelonLogger.Msg("Packet size: " + _data.Length);
             using (Packet _packet = new Packet(_data))
             {
                 int _packetId = _packet.ReadInt();
@@ -59,23 +52,23 @@ namespace SR2MP
             }
         }
 
-        public static void InitializeClientData()
+        public static void InitializePackets()
         {
             packetHandlers = new Dictionary<int, PacketHandler>()
             {
-                { (int)Packets.Connect, HandleData.ConnectionReceived },
-                { (int)Packets.Welcome, HandleData.WelcomeReceived },
-                { (int)Packets.Movement, HandleData.MovementReceived },
-                { (int)Packets.Animations, HandleData.AnimationsReceived },
-                { (int)Packets.Time, HandleData.HandleTime },
+                { (int)Packets.Message, HandleData.HandleMessage },
+                { (int)Packets.Connect, HandleData.HandleConnection },
+                { (int)Packets.Movement, HandleData.HandleMovement },
+                { (int)Packets.Animations, HandleData.HandleAnimations },
                 { (int)Packets.CameraAngle, HandleData.HandleCameraAngle },
                 { (int)Packets.VacconeState, HandleData.HandleVacconeState },
-                { (int)Packets.SaveRequest, HandleData.SaveRequested },
-                { (int)Packets.Save, HandleData.HandleSave },
                 { (int)Packets.GameMode, HandleData.HandleGameModeSwitch },
                 { (int)Packets.TimeRequest, HandleData.TimeRequested },
+                { (int)Packets.Time, HandleData.HandleTime },
+                { (int)Packets.SaveRequest, HandleData.SaveRequested },
+                { (int)Packets.Save, HandleData.HandleSave },
+                { (int)Packets.Slimes, HandleData.HandleSlimes }
             };
-            MelonLogger.Msg("Initialized packets.");
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using Il2Cpp;
 using Il2CppMonomiPark.SlimeRancher;
 using Il2CppSystem.IO;
 using MelonLoader;
@@ -7,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static UnityEngine.Object;
 
 namespace SR2MP
 {
@@ -15,10 +17,9 @@ namespace SR2MP
     {
         public static void Prefix(ref Stream stream)
         {
-            if (Main.Instance.joinedTheGame)
+            if (SteamLobby.Instance.JoinedTheGame)
             {
-                stream = Main.Instance.publicStream;
-                //Console.WriteLine("Patched: " + stream.Length);
+                stream = Main.Instance.PublicStream;
             }
         }
     }
@@ -28,7 +29,7 @@ namespace SR2MP
     {
         public static bool Prefix()
         {
-            if (Main.Instance.joinedTheGame)
+            if (SteamLobby.Instance.JoinedTheGame)
             {
                 return false;
             }
