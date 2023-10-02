@@ -1,6 +1,6 @@
 ﻿using Il2CppInterop.Runtime.InteropTypes.Arrays;
-using Il2CppSteamworks;
 using MelonLoader;
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +19,7 @@ namespace SR2MP
             uint size;
             while (SteamNetworking.IsP2PPacketAvailable(out size, 0))
             {
-                Il2CppStructArray<byte> _data = new Il2CppStructArray<byte>(size);
+                byte[] _data = new byte[size];
                 uint bytesRead;
 
                 CSteamID remoteId;
@@ -33,14 +33,28 @@ namespace SR2MP
 
         public static void SendTCPData(Packet packet)
         {
-            byte[] data = packet.ToArray();
-            SteamNetworking.SendP2PPacket(SteamLobby.Instance.Receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendReliable, 0);
+            if (Main.Instance.SteamIsAvailable)
+            {
+                byte[] data = packet.ToArray();
+                SteamNetworking.SendP2PPacket(SteamLobby.Instance.Receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendReliable, 0);
+            }
+            else
+            {
+                ClientSend.SendTCPData(packet);
+            }
         }
 
         public static void SendUDPData(Packet packet)
         {
-            byte[] data = packet.ToArray();
-            SteamNetworking.SendP2PPacket(SteamLobby.Instance.Receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendUnreliable, 0);
+            if (Main.Instance.SteamIsAvailable)
+            {
+                byte[] data = packet.ToArray();
+                SteamNetworking.SendP2PPacket(SteamLobby.Instance.Receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendUnreliable, 0);
+            }
+            else
+            {
+                ClientSend.SendUDPData(packet);
+            }
         }
 
         private static void HandleReceivedData(byte[] _data)
@@ -57,17 +71,16 @@ namespace SR2MP
             packetHandlers = new Dictionary<int, PacketHandler>()
             {
                 { (int)Packets.Message, HandleData.HandleMessage },
-                { (int)Packets.Connect, HandleData.HandleConnection },
                 { (int)Packets.Movement, HandleData.HandleMovement },
                 { (int)Packets.Animations, HandleData.HandleAnimations },
                 { (int)Packets.CameraAngle, HandleData.HandleCameraAngle },
                 { (int)Packets.VacconeState, HandleData.HandleVacconeState },
                 { (int)Packets.GameMode, HandleData.HandleGameModeSwitch },
-                { (int)Packets.TimeRequest, HandleData.TimeRequested },
                 { (int)Packets.Time, HandleData.HandleTime },
                 { (int)Packets.SaveRequest, HandleData.SaveRequested },
                 { (int)Packets.Save, HandleData.HandleSave },
-                { (int)Packets.Slimes, HandleData.HandleSlimes }
+                { (int)Packets.LandPlotUpgrade, HandleData.HandleLandPlotUpgrade },
+                { (int)Packets.LandPlotReplace, HandleData.HandleLandPlotReplace }
             };
         }
     }

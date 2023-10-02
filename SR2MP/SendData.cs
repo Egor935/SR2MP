@@ -19,15 +19,6 @@ namespace SR2MP
             }
         }
 
-        public static void SendConnection(bool inGame)
-        {
-            using (Packet _packet = new Packet((int)Packets.Connect))
-            {
-                _packet.Write(inGame);
-                Networking.SendUDPData(_packet);
-            }
-        }
-
         public static void SendMovement(Vector3 pos, float rot)
         {
             using (Packet _packet = new Packet((int)Packets.Movement))
@@ -49,7 +40,6 @@ namespace SR2MP
                 _packet.Write(b1);
                 _packet.Write(f4);
                 _packet.Write(f5);
-
                 Networking.SendUDPData(_packet);
             }
         }
@@ -81,20 +71,12 @@ namespace SR2MP
             }
         }
 
-        public static void RequestTime()
-        {
-            using (Packet _packet = new Packet((int)Packets.TimeRequest))
-            {
-                Networking.SendTCPData(_packet);
-            }
-        }
-
         public static void SendTime(double time)
         {
             using (Packet _packet = new Packet((int)Packets.Time))
             {
                 _packet.Write(time);
-                Networking.SendTCPData(_packet);
+                Networking.SendUDPData(_packet);
             }
         }
 
@@ -117,25 +99,23 @@ namespace SR2MP
             }
         }
 
-        public static void SendSlimes()
+        public static void SendLandPlotUpgrade(int id, int upgrade)
         {
-            using (Packet _packet = new Packet((int)Packets.Slimes))
+            using (Packet _packet = new Packet((int)Packets.LandPlotUpgrade))
             {
-                _packet.Write(Main.Instance.SyncingSlimes.Count);
-                foreach (var slime in Main.Instance.SyncingSlimes)
-                {
-                    if (slime != null)
-                    {
-                        _packet.Write(slime.transform.position);
-                        _packet.Write(slime.transform.rotation);
-                    }
-                    else
-                    {
-                        _packet.Write(Vector3.zero);
-                        _packet.Write(Quaternion.identity);
-                    }
-                }
-                Networking.SendUDPData(_packet);
+                _packet.Write(id);
+                _packet.Write(upgrade);
+                Networking.SendTCPData(_packet);
+            }
+        }
+
+        public static void SendLandPlotReplace(string id, int type)
+        {
+            using (Packet _packet = new Packet((int)Packets.LandPlotReplace))
+            {
+                _packet.Write(id);
+                _packet.Write(type);
+                Networking.SendTCPData(_packet);
             }
         }
     }

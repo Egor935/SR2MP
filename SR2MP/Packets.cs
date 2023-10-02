@@ -6,18 +6,19 @@ using UnityEngine;
 
 public enum Packets
 {
+    Welcome,
+    UDP,
     Message,
-    Connect,
     Movement,
     Animations,
     CameraAngle,
     VacconeState,
     GameMode,
-    TimeRequest,
     Time,
     SaveRequest,
     Save,
-    Slimes
+    LandPlotUpgrade,
+    LandPlotReplace
 }
 
 public class Packet : IDisposable

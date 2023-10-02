@@ -1,6 +1,8 @@
 ﻿using Il2Cpp;
+using Il2CppMonomiPark.SlimeRancher.DataModel;
 using Il2CppSystem.IO;
 using MelonLoader;
+using SR2MP.Patches;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,15 +18,6 @@ namespace SR2MP
         {
             var msg = _packet.ReadString();
             MelonLogger.Msg(msg);
-        }
-
-        public static void HandleConnection(Packet _packet)
-        {
-            var inGame = _packet.ReadBool();
-
-            SteamLobby.Instance.SecondPlayerConnected = true;
-            SteamLobby.Instance.TryToConnect = false;
-            SteamLobby.Instance.FriendInGame = inGame;
         }
 
         public static void HandleMovement(Packet _packet)
@@ -56,18 +49,20 @@ namespace SR2MP
 
         public static void HandleGameModeSwitch(Packet _packet)
         {
-            SteamLobby.Instance.FriendInGame = _packet.ReadBool();
-        }
-
-        public static void TimeRequested(Packet _packet)
-        {
-            var time = SRSingleton<SceneContext>.Instance.TimeDirector.worldModel.worldTime;
-            SendData.SendTime(time);
+            GlobalStuff.FriendInGame = _packet.ReadBool();
         }
 
         public static void HandleTime(Packet _packet)
         {
-            SRSingleton<SceneContext>.Instance.TimeDirector.worldModel.worldTime = _packet.ReadDouble();
+            var time = _packet.ReadDouble();
+
+            if (SRSingleton<SceneContext>.Instance != null)
+            {
+                if (SRSingleton<SceneContext>.Instance.TimeDirector != null)
+                {
+                    SRSingleton<SceneContext>.Instance.TimeDirector.worldModel.worldTime = time;
+                }
+            }
         }
 
         public static void SaveRequested(Packet _packet)
@@ -80,8 +75,6 @@ namespace SR2MP
             }
 
             SendData.SendSave(memoryStream);
-
-            Main.Instance.FindActors = true;
         }
 
         public static void HandleSave(Packet _packet)
@@ -92,30 +85,51 @@ namespace SR2MP
             MemoryStream save = new MemoryStream(array);
             save.Seek(0L, SeekOrigin.Begin);
 
-            Main.Instance.PublicStream = save;
+            SavedGame_Load.SaveStream = save;
 
             GameData.Summary saveToContinue = SRSingleton<GameContext>.Instance.AutoSaveDirector.GetSaveToContinue();
             SRSingleton<GameContext>.Instance.AutoSaveDirector.BeginLoad(saveToContinue.name, saveToContinue.saveName, null);
-
-            Main.Instance.FindActors = true;
         }
 
-        public static void HandleSlimes(Packet _packet)
+        public static void HandleLandPlotUpgrade(Packet _packet)
         {
-            if (Main.Instance.SyncActors)
-            {
-                var count = _packet.ReadInt();
-                for (int i = 0; i < count; i++)
-                {
-                    var pos = _packet.ReadVector3();
-                    var rot = _packet.ReadQuaternion();
+            var id = _packet.ReadInt();
+            var upgrade = _packet.ReadInt();
 
-                    var syncingSlime = Main.Instance.SyncingSlimes[i];
-                    if (syncingSlime != null)
-                    {
-                        syncingSlime.transform.position = pos;
-                        syncingSlime.transform.rotation = rot;
-                    }
+            LandPlot_AddUpgrade.HandlePacket = true;
+            var landplot = GameObject.Find($"landPlot ({id})");
+            landplot.GetComponentInChildren<LandPlot>().AddUpgrade((LandPlot.Upgrade)upgrade);
+        }
+
+        //public static void HandleLandPlotReplace(Packet _packet)
+        //{
+        //    var id = _packet.ReadInt();
+        //    var type = _packet.ReadInt();
+        //
+        //    LandPlotLocation_Replace.HandlePacket = true;
+        //    var landplot = GameObject.Find($"landPlot ({id})");
+        //    var landplotLocation = landplot.GetComponent<LandPlotLocation>();
+        //    var replacementPrefab = SRSingleton<GameContext>.Instance.LookupDirector.GetPlotPrefab((LandPlot.Id)type);
+        //    landplotLocation.Replace(landplot.GetComponentInChildren<LandPlot>(), replacementPrefab);
+        //}
+
+        public static void HandleLandPlotReplace(Packet _packet)
+        {
+            var id = _packet.ReadString();
+            var type = _packet.ReadInt();
+
+            if (SRSingleton<SceneContext>.Instance.GameModel.AllLandPlots().TryGetValue(id, out LandPlotModel model))
+            {
+                if (model.gameObj != null)
+                {
+                    model.InstantiatePlot(SRSingleton<GameContext>.Instance.LookupDirector.GetPlotPrefab((LandPlot.Id)type), false);
+                    model.Init();
+
+                    //model.gameObj.GetComponentInChildren<LandPlot>(true)?.Awake();
+                    //model.gameObj.GetComponentInChildren<GardenCatcher>(true)?.Awake();
+                    //model.gameObj.GetComponentInChildren<SiloStorage>(true)?.Awake();
+
+                    //model.NotifyParticipants();
                 }
             }
         }

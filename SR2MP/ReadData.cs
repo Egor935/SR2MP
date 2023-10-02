@@ -1,4 +1,6 @@
-﻿using Il2CppMonomiPark.SlimeRancher.Player.CharacterController;
+﻿using Il2Cpp;
+using Il2CppMonomiPark.SlimeRancher.DataModel;
+using Il2CppMonomiPark.SlimeRancher.Player.CharacterController;
 using MelonLoader;
 using System;
 using System.Collections.Generic;
@@ -15,7 +17,6 @@ namespace SR2MP
 
         private SRCharacterController _Player;
         private Animator _PlayerAnimator;
-        private SRCameraController _SRCameraController;
         private Animator _VacconeAnimator;
 
         //Movement
@@ -36,11 +37,17 @@ namespace SR2MP
         private bool _VacMode;
         private bool _CachedVacMode;
 
+        //Time
+        private double _Time;
+
+        //GameMode
+        private bool _GameMode;
+        private bool _GameModeCached;
+
         void Start()
         {
-            _Player = Main.Instance.Player;
-            _PlayerAnimator = Main.Instance.PlayerAnimator;
-            _SRCameraController = _Player.cameraController;
+            _Player = FindObjectOfType<SRCharacterController>();
+            _PlayerAnimator = _Player.GetComponent<Animator>();
             _VacconeAnimator = GameObject.Find("PlayerCameraKCC/First Person Objects/vac shape/Vaccone Prefab").GetComponent<Animator>();
         }
 
@@ -51,6 +58,13 @@ namespace SR2MP
             {
                 SendData.SendVacconeState(_VacMode);
                 _CachedVacMode = _VacMode;
+            }
+
+            ReadGameMode();
+            if (_GameMode != _GameModeCached)
+            {
+                SendData.SendGameModeSwitch(_GameMode);
+                _GameModeCached = _GameMode;
             }
         }
 
@@ -65,9 +79,10 @@ namespace SR2MP
             ReadCameraAngle();
             SendData.SendCameraAngle(_CameraAngle);
 
-            if (Main.Instance.SendActors)
+            if (GlobalStuff.Host)
             {
-                SendData.SendSlimes();
+                ReadTime();
+                SendData.SendTime(_Time);
             }
         }
 
@@ -90,12 +105,26 @@ namespace SR2MP
 
         private void ReadCameraAngle()
         {
-            _CameraAngle = _SRCameraController.targetVerticalAngle;
+            _CameraAngle = _Player.cameraController.targetVerticalAngle;
         }
 
         private void ReadVacconeState()
         {
             _VacMode = _VacconeAnimator.GetBool("vacMode");
+        }
+
+        private void ReadTime()
+        {
+            _Time = SRSingleton<SceneContext>.Instance.TimeDirector.worldModel.worldTime;
+        }
+
+        private void ReadGameMode()
+        {
+            var _SystemContext = SRSingleton<SystemContext>.Instance;
+            if (_SystemContext != null)
+            {
+                _GameMode = _SystemContext.SceneLoader.CurrentSceneGroup.isGameplay;
+            }
         }
     }
 }

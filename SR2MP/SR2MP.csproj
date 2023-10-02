@@ -37,9 +37,6 @@
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\MelonLoader\Il2CppAssemblies\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Il2Cppcom.rlabrecque.steamworks.net">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\MelonLoader\Il2CppAssemblies\Il2Cppcom.rlabrecque.steamworks.net.dll</HintPath>
-    </Reference>
     <Reference Include="Il2CppInterop.Runtime">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
     </Reference>
@@ -48,6 +45,10 @@
     </Reference>
     <Reference Include="MelonLoader">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\MelonLoader\net6\MelonLoader.dll</HintPath>
+    </Reference>
+    <Reference Include="Steamworks.NET, Version=20.2.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2\UserLibs\Steamworks.NET.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -81,8 +82,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Animations.cs" />
+    <Compile Include="CustomLobby.cs" />
+    <Compile Include="GameClient\Client.cs" />
+    <Compile Include="GameClient\ClientHandle.cs" />
+    <Compile Include="GameClient\ClientSend.cs" />
+    <Compile Include="GameClient\ThreadManager.cs" />
+    <Compile Include="GameServer\Client.cs" />
+    <Compile Include="GameServer\Constants.cs" />
+    <Compile Include="GameServer\GameLogic.cs" />
+    <Compile Include="GameServer\ServerInit.cs" />
+    <Compile Include="GameServer\Server.cs" />
+    <Compile Include="GameServer\ServerHandle.cs" />
+    <Compile Include="GameServer\ServerSend.cs" />
+    <Compile Include="GameServer\ThreadManager.cs" />
+    <Compile Include="GlobalStuff.cs" />
     <Compile Include="HandleData.cs" />
-    <Compile Include="Input.cs" />
     <Compile Include="Loader.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Movement.cs" />
@@ -90,10 +104,14 @@
     <Compile Include="Packets.cs" />
     <Compile Include="Beatrix.cs" />
     <Compile Include="Patches.cs" />
+    <Compile Include="Patches\Patch_GUIStateObjects.cs" />
+    <Compile Include="Patches\Patch_LandPlot.cs" />
+    <Compile Include="Patches\Patch_LandPlotLocation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadData.cs" />
     <Compile Include="SendData.cs" />
     <Compile Include="SteamLobby.cs" />
+    <Compile Include="UI.cs" />
     <Compile Include="Vacpack.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

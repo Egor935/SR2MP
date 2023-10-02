@@ -8,18 +8,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static UnityEngine.Object;
+using UnityEngine;
 
 namespace SR2MP
 {
     [HarmonyPatch(typeof(SavedGame), nameof(SavedGame.Load), MethodType.Normal)]
     class SavedGame_Load
     {
+        public static MemoryStream SaveStream;
         public static void Prefix(ref Stream stream)
         {
-            if (SteamLobby.Instance.JoinedTheGame)
+            if (GlobalStuff.JoinedTheGame)
             {
-                stream = Main.Instance.PublicStream;
+                stream = SaveStream;
             }
         }
     }
@@ -29,7 +30,7 @@ namespace SR2MP
     {
         public static bool Prefix()
         {
-            if (SteamLobby.Instance.JoinedTheGame)
+            if (GlobalStuff.JoinedTheGame)
             {
                 return false;
             }
