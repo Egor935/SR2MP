@@ -81,5 +81,15 @@ namespace GameServer
         {
             ServerSend.SendLandPlotReplace(_fromClient, _packet);
         }
+
+        public static void SleepReceived(int _fromClient, Packet _packet)
+        {
+            ServerSend.SendSleep(_fromClient, _packet);
+        }
+
+        public static void CurrencyReceived(int _fromClient, Packet _packet)
+        {
+            ServerSend.SendCurrency(_fromClient, _packet);
+        }
     }
 }

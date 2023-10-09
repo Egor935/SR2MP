@@ -131,7 +131,9 @@ namespace GameServer
                 { (int)Packets.SaveRequest, ServerHandle.SaveRequestReceived },
                 { (int)Packets.Save, ServerHandle.SaveReceived },
                 { (int)Packets.LandPlotUpgrade, ServerHandle.LandPlotUpgradeReceived },
-                { (int)Packets.LandPlotReplace, ServerHandle.LandPlotReplaceReceived }
+                { (int)Packets.LandPlotReplace, ServerHandle.LandPlotReplaceReceived },
+                { (int)Packets.Sleep, ServerHandle.SleepReceived },
+                { (int)Packets.Currency, ServerHandle.CurrencyReceived }
             };
             MelonLogger.Msg("Server: Initialized packets.");
         }

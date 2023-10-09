@@ -76,7 +76,11 @@ namespace SR2MP
             {
                 if (int.TryParse(donatorAmounts[i].Replace(" rubles", null), out int amount))
                 {
-                    if (amount >= 10000)
+                    if (amount >= 20000)
+                    {
+                        GUI.color = new Color(190f / 255f, 38f / 255f, 76f / 255f);
+                    }
+                    else if (amount >= 10000)
                     {
                         GUI.color = new Color(181f / 255f, 206f / 255f, 239f / 255f);
                     }

@@ -12,20 +12,13 @@ namespace SR2MP.Patches
     [HarmonyPatch(typeof(LandPlotLocation), nameof(LandPlotLocation.Replace), MethodType.Normal)]
     class LandPlotLocation_Replace
     {
-        public static bool HandlePacket;
         public static void Postfix(LandPlotLocation __instance, GameObject replacementPrefab)
         {
-            if (!HandlePacket)
+            if (!GlobalStuff.HandlePacket)
             {
-                //var id = int.Parse(__instance.transform.parent.name.Replace("landPlot (", null).Replace(")", null));
-                var id = __instance.id;
+                var id = __instance.Id;
                 var type = (int)replacementPrefab.GetComponent<LandPlot>().typeId;
-
                 SendData.SendLandPlotReplace(id, type);
-            }
-            else
-            {
-                HandlePacket = false;
             }
         }
     }

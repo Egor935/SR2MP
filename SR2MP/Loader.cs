@@ -12,7 +12,7 @@ namespace SR2MP
 {
     public class Loader : MelonMod
     {
-        public const string ModVersion = "0.0.9";
+        public const string ModVersion = "0.1.0";
 
         public override void OnInitializeMelon()
         {

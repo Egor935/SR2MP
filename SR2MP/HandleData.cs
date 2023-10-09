@@ -1,8 +1,8 @@
 ﻿using Il2Cpp;
 using Il2CppMonomiPark.SlimeRancher.DataModel;
+using Il2CppMonomiPark.SlimeRancher.Player;
 using Il2CppSystem.IO;
 using MelonLoader;
-using SR2MP.Patches;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -93,44 +93,59 @@ namespace SR2MP
 
         public static void HandleLandPlotUpgrade(Packet _packet)
         {
-            var id = _packet.ReadInt();
+            var id = _packet.ReadString();
             var upgrade = _packet.ReadInt();
 
-            LandPlot_AddUpgrade.HandlePacket = true;
-            var landplot = GameObject.Find($"landPlot ({id})");
-            landplot.GetComponentInChildren<LandPlot>().AddUpgrade((LandPlot.Upgrade)upgrade);
+            if (SRSingleton<SceneContext>.Instance != null)
+            {
+                if (SRSingleton<SceneContext>.Instance.GameModel.landPlots.TryGetValue(id, out LandPlotModel model))
+                {
+                    if (model.gameObj != null)
+                    {
+                        var landPlot = model.gameObj.GetComponentInChildren<LandPlot>();
+                        landPlot.AddUpgrade((LandPlot.Upgrade)upgrade);
+                    }
+                }
+            }
         }
-
-        //public static void HandleLandPlotReplace(Packet _packet)
-        //{
-        //    var id = _packet.ReadInt();
-        //    var type = _packet.ReadInt();
-        //
-        //    LandPlotLocation_Replace.HandlePacket = true;
-        //    var landplot = GameObject.Find($"landPlot ({id})");
-        //    var landplotLocation = landplot.GetComponent<LandPlotLocation>();
-        //    var replacementPrefab = SRSingleton<GameContext>.Instance.LookupDirector.GetPlotPrefab((LandPlot.Id)type);
-        //    landplotLocation.Replace(landplot.GetComponentInChildren<LandPlot>(), replacementPrefab);
-        //}
 
         public static void HandleLandPlotReplace(Packet _packet)
         {
             var id = _packet.ReadString();
             var type = _packet.ReadInt();
 
-            if (SRSingleton<SceneContext>.Instance.GameModel.AllLandPlots().TryGetValue(id, out LandPlotModel model))
+            if (SRSingleton<SceneContext>.Instance != null)
             {
-                if (model.gameObj != null)
+                if (SRSingleton<SceneContext>.Instance.GameModel.landPlots.TryGetValue(id, out LandPlotModel model))
                 {
-                    model.InstantiatePlot(SRSingleton<GameContext>.Instance.LookupDirector.GetPlotPrefab((LandPlot.Id)type), false);
-                    model.Init();
-
-                    //model.gameObj.GetComponentInChildren<LandPlot>(true)?.Awake();
-                    //model.gameObj.GetComponentInChildren<GardenCatcher>(true)?.Awake();
-                    //model.gameObj.GetComponentInChildren<SiloStorage>(true)?.Awake();
-
-                    //model.NotifyParticipants();
+                    if (model.gameObj != null)
+                    {
+                        var landPlotLocation = model.gameObj.GetComponentInChildren<LandPlotLocation>();
+                        var oldLandPlot = model.gameObj.GetComponentInChildren<LandPlot>();
+                        var replacementPrefab = SRSingleton<GameContext>.Instance.LookupDirector.GetPlotPrefab((LandPlot.Id)type);
+                        landPlotLocation.Replace(oldLandPlot, replacementPrefab);
+                    }
                 }
+            }
+        }
+
+        public static void HandleSleep(Packet _packet)
+        {
+            var endTime = _packet.ReadDouble();
+
+            if (SRSingleton<LockOnDeath>.Instance != null)
+            {
+                SRSingleton<LockOnDeath>.Instance.LockUntil(endTime, 0f);
+            }
+        }
+
+        public static void HandleCurrency(Packet _packet)
+        {
+            var value = _packet.ReadInt();
+
+            if (SRSingleton<SceneContext>.Instance != null)
+            {
+                SRSingleton<SceneContext>.Instance.PlayerState.model.currency = value;
             }
         }
     }

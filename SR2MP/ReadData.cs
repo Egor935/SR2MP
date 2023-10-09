@@ -44,11 +44,16 @@ namespace SR2MP
         private bool _GameMode;
         private bool _GameModeCached;
 
+        //Currency
+        private int _Currency;
+        private int _CurrencyCached;
+
         void Start()
         {
             _Player = FindObjectOfType<SRCharacterController>();
             _PlayerAnimator = _Player.GetComponent<Animator>();
             _VacconeAnimator = GameObject.Find("PlayerCameraKCC/First Person Objects/vac shape/Vaccone Prefab").GetComponent<Animator>();
+            _CurrencyCached = _Currency;
         }
 
         void Update()
@@ -66,6 +71,13 @@ namespace SR2MP
                 SendData.SendGameModeSwitch(_GameMode);
                 _GameModeCached = _GameMode;
             }
+
+            ReadCurrency();
+            if (_CurrencyCached != _Currency)
+            {
+                SendData.SendCurrency(_Currency);
+                _CurrencyCached = _Currency;
+            }
         }
 
         void FixedUpdate()
@@ -79,7 +91,7 @@ namespace SR2MP
             ReadCameraAngle();
             SendData.SendCameraAngle(_CameraAngle);
 
-            if (GlobalStuff.Host)
+            if (!GlobalStuff.JoinedTheGame)
             {
                 ReadTime();
                 SendData.SendTime(_Time);
@@ -125,6 +137,11 @@ namespace SR2MP
             {
                 _GameMode = _SystemContext.SceneLoader.CurrentSceneGroup.isGameplay;
             }
+        }
+
+        private void ReadCurrency()
+        {
+            _Currency = SRSingleton<SceneContext>.Instance.PlayerState.model.currency;
         }
     }
 }

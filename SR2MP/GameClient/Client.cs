@@ -141,11 +141,15 @@ public class Client : MonoBehaviour
                 byte[] _packetBytes = receivedData.ReadBytes(_packetLength);
                 ThreadManager.ExecuteOnMainThread(() =>
                 {
+                    GlobalStuff.HandlePacket = true;
+
                     using (Packet _packet = new Packet(_packetBytes))
                     {
                         int _packetId = _packet.ReadInt();
                         packetHandlers[_packetId](_packet);
                     }
+
+                    GlobalStuff.HandlePacket = false;
                 });
 
                 _packetLength = 0;
@@ -238,11 +242,15 @@ public class Client : MonoBehaviour
 
             ThreadManager.ExecuteOnMainThread(() =>
             {
+                GlobalStuff.HandlePacket = true;
+
                 using (Packet _packet = new Packet(_data))
                 {
                     int _packetId = _packet.ReadInt();
                     packetHandlers[_packetId](_packet);
                 }
+
+                GlobalStuff.HandlePacket = false;
             });
         }
     }
@@ -263,7 +271,9 @@ public class Client : MonoBehaviour
             { (int)Packets.SaveRequest, HandleData.SaveRequested },
             { (int)Packets.Save, HandleData.HandleSave },
             { (int)Packets.LandPlotUpgrade, HandleData.HandleLandPlotUpgrade },
-            { (int)Packets.LandPlotReplace, HandleData.HandleLandPlotReplace }
+            { (int)Packets.LandPlotReplace, HandleData.HandleLandPlotReplace },
+            { (int)Packets.Sleep, HandleData.HandleSleep },
+            { (int)Packets.Currency, HandleData.HandleCurrency }
         };
         MelonLogger.Msg("Client: Initialized packets.");
     }

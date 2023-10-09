@@ -59,11 +59,15 @@ namespace SR2MP
 
         private static void HandleReceivedData(byte[] _data)
         {
+            GlobalStuff.HandlePacket = true;
+
             using (Packet _packet = new Packet(_data))
             {
                 int _packetId = _packet.ReadInt();
                 packetHandlers[_packetId].Invoke(_packet);
             }
+
+            GlobalStuff.HandlePacket = false;
         }
 
         public static void InitializePackets()
@@ -80,7 +84,9 @@ namespace SR2MP
                 { (int)Packets.SaveRequest, HandleData.SaveRequested },
                 { (int)Packets.Save, HandleData.HandleSave },
                 { (int)Packets.LandPlotUpgrade, HandleData.HandleLandPlotUpgrade },
-                { (int)Packets.LandPlotReplace, HandleData.HandleLandPlotReplace }
+                { (int)Packets.LandPlotReplace, HandleData.HandleLandPlotReplace },
+                { (int)Packets.Sleep, HandleData.HandleSleep },
+                { (int)Packets.Currency, HandleData.HandleCurrency }
             };
         }
     }

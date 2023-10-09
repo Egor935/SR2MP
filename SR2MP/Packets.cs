@@ -18,7 +18,9 @@ public enum Packets
     SaveRequest,
     Save,
     LandPlotUpgrade,
-    LandPlotReplace
+    LandPlotReplace,
+    Sleep,
+    Currency
 }
 
 public class Packet : IDisposable

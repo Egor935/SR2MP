@@ -14,14 +14,10 @@ namespace SR2MP.Patches
         public static bool HandlePacket;
         public static void Postfix(LandPlot __instance, LandPlot.Upgrade upgrade)
         {
-            if (!HandlePacket)
+            if (!GlobalStuff.HandlePacket)
             {
-                var id = __instance.transform.parent.name.Replace("landPlot (", null).Replace(")", null);
-                SendData.SendLandPlotUpgrade(int.Parse(id), (int)upgrade);
-            }
-            else
-            {
-                HandlePacket = false;
+                var id = __instance.transform.parent.GetComponent<LandPlotLocation>().Id;
+                SendData.SendLandPlotUpgrade(id, (int)upgrade);
             }
         }
     }

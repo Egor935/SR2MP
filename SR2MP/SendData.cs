@@ -99,7 +99,7 @@ namespace SR2MP
             }
         }
 
-        public static void SendLandPlotUpgrade(int id, int upgrade)
+        public static void SendLandPlotUpgrade(string id, int upgrade)
         {
             using (Packet _packet = new Packet((int)Packets.LandPlotUpgrade))
             {
@@ -109,12 +109,30 @@ namespace SR2MP
             }
         }
 
-        public static void SendLandPlotReplace(string id, int type)
+        public static void SendLandPlotReplace(string name, int type)
         {
             using (Packet _packet = new Packet((int)Packets.LandPlotReplace))
             {
-                _packet.Write(id);
+                _packet.Write(name);
                 _packet.Write(type);
+                Networking.SendTCPData(_packet);
+            }
+        }
+
+        public static void SendSleep(double endTime)
+        {
+            using (Packet _packet = new Packet((int)Packets.Sleep))
+            {
+                _packet.Write(endTime);
+                Networking.SendTCPData(_packet);
+            }
+        }
+
+        public static void SendCurrency(int value)
+        {
+            using (Packet _packet = new Packet((int)Packets.Currency))
+            {
+                _packet.Write(value);
                 Networking.SendTCPData(_packet);
             }
         }

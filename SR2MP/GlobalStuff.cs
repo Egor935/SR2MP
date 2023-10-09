@@ -14,5 +14,6 @@ namespace SR2MP
         public static bool Host;
         public static bool FriendInGame;
         public static bool JoinedTheGame;
+        public static bool HandlePacket;
     }
 }

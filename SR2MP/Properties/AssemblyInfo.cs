@@ -36,4 +36,4 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: MelonInfo(typeof(Loader), "Slime Rancher 2 Multiplayer", Loader.ModVersion, "Egor")]
+[assembly: MelonInfo(typeof(Loader), "Slime Rancher 2 Multiplayer", Loader.ModVersion, "Egor_ICE")]

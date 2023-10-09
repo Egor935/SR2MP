@@ -134,6 +134,16 @@ namespace GameServer
         {
             SendTCPDataToAll(id, _packet);
         }
+
+        public static void SendSleep(int id, Packet _packet)
+        {
+            SendTCPDataToAll(id, _packet);
+        }
+
+        public static void SendCurrency(int id, Packet _packet)
+        {
+            SendTCPDataToAll(id, _packet);
+        }
         #endregion
     }
 }
