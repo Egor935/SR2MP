@@ -13,12 +13,10 @@ using UnityEngine.SceneManagement;
 
 namespace SR2MP
 {
-    public class Main : MonoBehaviour
+    public class MultiplayerMain : MonoBehaviour
     {
-        public Main(IntPtr ptr) : base(ptr) { }
-
         #region Variables
-        public static Main Instance;
+        public static MultiplayerMain Instance;
 
         //Main objects
         public SRCharacterController Player;

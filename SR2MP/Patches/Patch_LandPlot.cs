@@ -11,10 +11,9 @@ namespace SR2MP.Patches
     [HarmonyPatch(typeof(LandPlot), nameof(LandPlot.AddUpgrade), MethodType.Normal)]
     class LandPlot_AddUpgrade
     {
-        public static bool HandlePacket;
         public static void Postfix(LandPlot __instance, LandPlot.Upgrade upgrade)
         {
-            if (!GlobalStuff.HandlePacket)
+            if (!Statics.HandlePacket)
             {
                 var id = __instance.transform.parent.GetComponent<LandPlotLocation>().Id;
                 SendData.SendLandPlotUpgrade(id, (int)upgrade);

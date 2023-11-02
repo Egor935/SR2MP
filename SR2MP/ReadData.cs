@@ -1,9 +1,10 @@
 ﻿using Il2Cpp;
 using Il2CppMonomiPark.SlimeRancher.DataModel;
 using Il2CppMonomiPark.SlimeRancher.Player.CharacterController;
+using Il2CppSystem.Collections.Generic;
 using MelonLoader;
 using System;
-using System.Collections.Generic;
+//using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,8 +14,6 @@ namespace SR2MP
 {
     public class ReadData : MonoBehaviour
     {
-        public ReadData(IntPtr ptr) : base(ptr) { }
-
         private SRCharacterController _Player;
         private Animator _PlayerAnimator;
         private Animator _VacconeAnimator;
@@ -44,16 +43,14 @@ namespace SR2MP
         private bool _GameMode;
         private bool _GameModeCached;
 
-        //Currency
-        private int _Currency;
-        private int _CurrencyCached;
+        //Actors
+        private Dictionary<long, IdentifiableModel> _Actors;
 
         void Start()
         {
             _Player = FindObjectOfType<SRCharacterController>();
             _PlayerAnimator = _Player.GetComponent<Animator>();
             _VacconeAnimator = GameObject.Find("PlayerCameraKCC/First Person Objects/vac shape/Vaccone Prefab").GetComponent<Animator>();
-            _CurrencyCached = _Currency;
         }
 
         void Update()
@@ -71,13 +68,6 @@ namespace SR2MP
                 SendData.SendGameModeSwitch(_GameMode);
                 _GameModeCached = _GameMode;
             }
-
-            ReadCurrency();
-            if (_CurrencyCached != _Currency)
-            {
-                SendData.SendCurrency(_Currency);
-                _CurrencyCached = _Currency;
-            }
         }
 
         void FixedUpdate()
@@ -91,7 +81,7 @@ namespace SR2MP
             ReadCameraAngle();
             SendData.SendCameraAngle(_CameraAngle);
 
-            if (!GlobalStuff.JoinedTheGame)
+            if (!Statics.JoinedTheGame)
             {
                 ReadTime();
                 SendData.SendTime(_Time);
@@ -137,11 +127,6 @@ namespace SR2MP
             {
                 _GameMode = _SystemContext.SceneLoader.CurrentSceneGroup.isGameplay;
             }
-        }
-
-        private void ReadCurrency()
-        {
-            _Currency = SRSingleton<SceneContext>.Instance.PlayerState.model.currency;
         }
     }
 }

@@ -9,8 +9,6 @@ namespace SR2MP
 {
     public class Beatrix : MonoBehaviour
     {
-        public Beatrix(IntPtr ptr) : base(ptr) { }
-
         public static Beatrix Instance;
 
         public Movement BeatrixMovement;

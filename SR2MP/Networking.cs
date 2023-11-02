@@ -33,7 +33,7 @@ namespace SR2MP
 
         public static void SendTCPData(Packet packet)
         {
-            if (Main.Instance.SteamIsAvailable)
+            if (MultiplayerMain.Instance.SteamIsAvailable)
             {
                 byte[] data = packet.ToArray();
                 SteamNetworking.SendP2PPacket(SteamLobby.Instance.Receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendReliable, 0);
@@ -46,7 +46,7 @@ namespace SR2MP
 
         public static void SendUDPData(Packet packet)
         {
-            if (Main.Instance.SteamIsAvailable)
+            if (MultiplayerMain.Instance.SteamIsAvailable)
             {
                 byte[] data = packet.ToArray();
                 SteamNetworking.SendP2PPacket(SteamLobby.Instance.Receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendUnreliable, 0);
@@ -59,7 +59,7 @@ namespace SR2MP
 
         private static void HandleReceivedData(byte[] _data)
         {
-            GlobalStuff.HandlePacket = true;
+            Statics.HandlePacket = true;
 
             using (Packet _packet = new Packet(_data))
             {
@@ -67,7 +67,7 @@ namespace SR2MP
                 packetHandlers[_packetId].Invoke(_packet);
             }
 
-            GlobalStuff.HandlePacket = false;
+            Statics.HandlePacket = false;
         }
 
         public static void InitializePackets()

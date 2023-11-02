@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace SR2MP
 {
-    public static class GlobalStuff
+    public static class Statics
     {
         public static bool IsMultiplayer = true;
         public static string SecondPlayerName = "None";

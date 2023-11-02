@@ -1,6 +1,11 @@
-﻿using Il2CppSystem.IO;
+﻿using Il2Cpp;
+using Il2CppMonomiPark.SlimeRancher.DataModel;
+using Il2CppSystem.Collections.Generic;
+using Il2CppSystem.IO;
+using MelonLoader;
 using System;
-using System.Collections.Generic;
+using System.IO.Compression;
+//using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;

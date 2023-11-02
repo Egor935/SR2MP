@@ -12,8 +12,6 @@ namespace SR2MP
 {
     public class SteamLobby : MonoBehaviour
     {
-        public SteamLobby(IntPtr ptr) : base(ptr) { }
-
         #region Variables
         public static SteamLobby Instance;
 
@@ -38,7 +36,7 @@ namespace SR2MP
                 if (GUI.Button(new Rect(15f, 35f, 150f, 25f), "Create lobby"))
                 {
                     CreateLobby();
-                    GlobalStuff.Host = true;
+                    Statics.Host = true;
                     allowCreateLobby = false;
                 }
 
@@ -62,22 +60,22 @@ namespace SR2MP
             }
 
             GUI.Label(new Rect(15f, 95f, 150f, 25f), "Connected friend:");
-            GUI.Label(new Rect(15f, 125f, 150f, 25f), GlobalStuff.SecondPlayerName);
+            GUI.Label(new Rect(15f, 125f, 150f, 25f), Statics.SecondPlayerName);
 
             if (Receiver != CSteamID.Nil)
             {
-                string inGame = GlobalStuff.FriendInGame ? "<color=green>YES</color>" : "<color=red>NO</color>";
+                string inGame = Statics.FriendInGame ? "<color=green>YES</color>" : "<color=red>NO</color>";
                 GUI.Label(new Rect(15f, 155f, 150f, 25f), $"In game: {inGame}");
 
-                if (!GlobalStuff.JoinedTheGame)
+                if (!Statics.JoinedTheGame)
                 {
-                    if (GlobalStuff.FriendInGame)
+                    if (Statics.FriendInGame)
                     {
                         if (!SRSingleton<SystemContext>.Instance.SceneLoader.CurrentSceneGroup.isGameplay)
                         {
                             if (GUI.Button(new Rect(40f, 185f, 100f, 25f), "Join"))
                             {
-                                GlobalStuff.JoinedTheGame = true;
+                                Statics.JoinedTheGame = true;
                                 SendData.RequestSave();
                             }
                         }
@@ -108,7 +106,7 @@ namespace SR2MP
                 if (secondPlayer != CSteamID.Nil)
                 {
                     Receiver = secondPlayer;
-                    GlobalStuff.SecondPlayerName = SteamFriends.GetFriendPersonaName(secondPlayer);
+                    Statics.SecondPlayerName = SteamFriends.GetFriendPersonaName(secondPlayer);
                     SendData.SendMessage("Welcome to the lobby!");
                     getSecondPlayer = false;
                 }
@@ -152,9 +150,9 @@ namespace SR2MP
                 if (member != SteamUser.GetSteamID())
                 {
                     Receiver = member;
-                    GlobalStuff.SecondPlayerName = SteamFriends.GetFriendPersonaName(member);
+                    Statics.SecondPlayerName = SteamFriends.GetFriendPersonaName(member);
                     SendData.SendMessage($"Player {SteamFriends.GetPersonaName()} successefully connected!");
-                    GlobalStuff.Host = false;
+                    Statics.Host = false;
                     allowCreateLobby = false;
                 }
             }

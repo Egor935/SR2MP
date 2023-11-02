@@ -13,7 +13,7 @@ namespace SR2MP.Patches
     {
         public static void Postfix(double endTime)
         {
-            if (GlobalStuff.JoinedTheGame && !GlobalStuff.HandlePacket)
+            if (Statics.JoinedTheGame && !Statics.HandlePacket)
             {
                 SendData.SendSleep(endTime);
             }

@@ -1,13 +1,20 @@
 ﻿using Il2Cpp;
+using Il2CppInterop.Runtime;
+using Il2CppMonomiPark.SlimeRancher;
 using Il2CppMonomiPark.SlimeRancher.DataModel;
 using Il2CppMonomiPark.SlimeRancher.Player;
+using Il2CppMonomiPark.SlimeRancher.SceneManagement;
+using Il2CppMonomiPark.SlimeRancher.UI;
+using Il2CppMonomiPark.SlimeRancher.UI.MainMenu;
 using Il2CppSystem.IO;
 using MelonLoader;
+using SR2MP.Patches;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using UnityEngine;
 
 namespace SR2MP
@@ -49,7 +56,7 @@ namespace SR2MP
 
         public static void HandleGameModeSwitch(Packet _packet)
         {
-            GlobalStuff.FriendInGame = _packet.ReadBool();
+            Statics.FriendInGame = _packet.ReadBool();
         }
 
         public static void HandleTime(Packet _packet)
@@ -67,6 +74,8 @@ namespace SR2MP
 
         public static void SaveRequested(Packet _packet)
         {
+            SRSingleton<GameContext>.Instance.AutoSaveDirector.SaveGame();
+
             MemoryStream memoryStream = new MemoryStream();
             {
                 var _ASD = SRSingleton<GameContext>.Instance.AutoSaveDirector;
@@ -86,9 +95,8 @@ namespace SR2MP
             save.Seek(0L, SeekOrigin.Begin);
 
             SavedGame_Load.SaveStream = save;
-
-            GameData.Summary saveToContinue = SRSingleton<GameContext>.Instance.AutoSaveDirector.GetSaveToContinue();
-            SRSingleton<GameContext>.Instance.AutoSaveDirector.BeginLoad(saveToContinue.name, saveToContinue.saveName, null);
+            FileStorageProvider_GetGameData.HandleSave = true;
+            SRSingleton<GameContext>.Instance.AutoSaveDirector.BeginLoad(null, null, null);
         }
 
         public static void HandleLandPlotUpgrade(Packet _packet)
@@ -145,7 +153,9 @@ namespace SR2MP
 
             if (SRSingleton<SceneContext>.Instance != null)
             {
+                int difference = value - SRSingleton<SceneContext>.Instance.PlayerState.model.currency;
                 SRSingleton<SceneContext>.Instance.PlayerState.model.currency = value;
+                SRSingleton<PopupElementsUI>.Instance.CreateCoinsPopup(difference, PlayerState.CoinsType.NORM);
             }
         }
     }

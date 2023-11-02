@@ -27,69 +27,14 @@ namespace GameServer
             MelonLogger.Msg($"Server: Received packet via UDP. Contains message: {_msg}");
         }
 
-        public static void MessageReceived(int _fromClient, Packet _packet)
+        public static void TCPDataReceived(int _fromClient, Packet _packet)
         {
-            ServerSend.SendMessage(_fromClient, _packet);
+            ServerSend.SendData(_fromClient, _packet, 0);
         }
 
-        public static void MovementReceived(int _fromClient, Packet _packet)
+        public static void UDPDataReceived(int _fromClient, Packet _packet)
         {
-            ServerSend.SendMovement(_fromClient, _packet);
-        }
-
-        public static void AnimationsReceived(int _fromClient, Packet _packet)
-        {
-            ServerSend.SendAnimations(_fromClient, _packet);
-        }
-
-        public static void CameraAngleReceived(int _fromClient, Packet _packet)
-        {
-            ServerSend.SendCameraAngle(_fromClient, _packet);
-        }
-
-        public static void VacconeStateReceived(int _fromClient, Packet _packet)
-        {
-            ServerSend.SendVacconeState(_fromClient, _packet);
-        }
-
-        public static void GameModeReceived(int _fromClient, Packet _packet)
-        {
-            ServerSend.SendGameMode(_fromClient, _packet);
-        }
-
-        public static void TimeReceived(int _fromClient, Packet _packet)
-        {
-            ServerSend.SendTime(_fromClient, _packet);
-        }
-
-        public static void SaveRequestReceived(int _fromClient, Packet _packet)
-        {
-            ServerSend.SendSaveRequest(_fromClient, _packet);
-        }
-
-        public static void SaveReceived(int _fromClient, Packet _packet)
-        {
-            ServerSend.SendSave(_fromClient, _packet);
-        }
-
-        public static void LandPlotUpgradeReceived(int _fromClient, Packet _packet)
-        {
-            ServerSend.SendLandPlotUpgrade(_fromClient, _packet);
-        }
-
-        public static void LandPlotReplaceReceived(int _fromClient, Packet _packet)
-        {
-            ServerSend.SendLandPlotReplace(_fromClient, _packet);
-        }
-
-        public static void SleepReceived(int _fromClient, Packet _packet)
-        {
-            ServerSend.SendSleep(_fromClient, _packet);
-        }
-
-        public static void CurrencyReceived(int _fromClient, Packet _packet)
-        {
-            ServerSend.SendCurrency(_fromClient, _packet);
+            ServerSend.SendData(_fromClient, _packet, 1);
         }
     }
 }

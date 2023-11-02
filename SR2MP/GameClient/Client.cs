@@ -141,7 +141,7 @@ public class Client : MonoBehaviour
                 byte[] _packetBytes = receivedData.ReadBytes(_packetLength);
                 ThreadManager.ExecuteOnMainThread(() =>
                 {
-                    GlobalStuff.HandlePacket = true;
+                    Statics.HandlePacket = true;
 
                     using (Packet _packet = new Packet(_packetBytes))
                     {
@@ -149,7 +149,7 @@ public class Client : MonoBehaviour
                         packetHandlers[_packetId](_packet);
                     }
 
-                    GlobalStuff.HandlePacket = false;
+                    Statics.HandlePacket = false;
                 });
 
                 _packetLength = 0;
@@ -242,7 +242,7 @@ public class Client : MonoBehaviour
 
             ThreadManager.ExecuteOnMainThread(() =>
             {
-                GlobalStuff.HandlePacket = true;
+                Statics.HandlePacket = true;
 
                 using (Packet _packet = new Packet(_data))
                 {
@@ -250,7 +250,7 @@ public class Client : MonoBehaviour
                     packetHandlers[_packetId](_packet);
                 }
 
-                GlobalStuff.HandlePacket = false;
+                Statics.HandlePacket = false;
             });
         }
     }

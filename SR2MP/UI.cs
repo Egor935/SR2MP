@@ -15,8 +15,6 @@ namespace SR2MP
 {
     public class UI : MonoBehaviour
     {
-        public UI(IntPtr ptr) : base(ptr) { }
-
         #region Variables
         //Menu
         private bool menuState = true;
@@ -76,7 +74,11 @@ namespace SR2MP
             {
                 if (int.TryParse(donatorAmounts[i].Replace(" rubles", null), out int amount))
                 {
-                    if (amount >= 20000)
+                    if ((amount >= 40000))
+                    {
+                        GUI.color = new Color(111f / 255f, 126f / 255f, 206f / 255f);
+                    }
+                    else if (amount >= 20000)
                     {
                         GUI.color = new Color(190f / 255f, 38f / 255f, 76f / 255f);
                     }
@@ -153,7 +155,7 @@ namespace SR2MP
 
             if (GUI.Button(new Rect(15f, 95f, 150f, 25f), "Other (EGS, MS)"))
             {
-                Main.Instance.SteamIsAvailable = false;
+                MultiplayerMain.Instance.SteamIsAvailable = false;
                 this.gameObject.AddComponent<CustomLobby>();
                 menuMode = "custom";
             }
@@ -163,7 +165,7 @@ namespace SR2MP
         {
             DownloadListOfDonators();
 
-            if (!Main.Instance.SteamIsAvailable)
+            if (!MultiplayerMain.Instance.SteamIsAvailable)
             {
                 this.gameObject.AddComponent<CustomLobby>();
                 menuMode = "custom";

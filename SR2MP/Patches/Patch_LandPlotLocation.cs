@@ -14,7 +14,7 @@ namespace SR2MP.Patches
     {
         public static void Postfix(LandPlotLocation __instance, GameObject replacementPrefab)
         {
-            if (!GlobalStuff.HandlePacket)
+            if (!Statics.HandlePacket)
             {
                 var id = __instance.Id;
                 var type = (int)replacementPrefab.GetComponent<LandPlot>().typeId;

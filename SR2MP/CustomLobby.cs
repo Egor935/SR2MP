@@ -12,8 +12,6 @@ namespace SR2MP
 {
     public class CustomLobby : MonoBehaviour
     {
-        public CustomLobby(IntPtr ptr) : base(ptr) { }
-
         public static CustomLobby Instance;
 
         //Stuff
@@ -39,7 +37,7 @@ namespace SR2MP
                     Client.instance.ConnectToServer();
                     allowToHostServer = false;
                     allowToConnectServer = false;
-                    GlobalStuff.Host = true;
+                    Statics.Host = true;
                 }
             }
             else
@@ -66,18 +64,18 @@ namespace SR2MP
 
             //if (GlobalStuff.SecondPlayerName != "None")
             {
-                string inGame = GlobalStuff.FriendInGame ? "<color=green>YES</color>" : "<color=red>NO</color>";
+                string inGame = Statics.FriendInGame ? "<color=green>YES</color>" : "<color=red>NO</color>";
                 GUI.Label(new Rect(15f, 125f, 150f, 25f), $"Friend in game: {inGame}");
 
-                if (!GlobalStuff.JoinedTheGame)
+                if (!Statics.JoinedTheGame)
                 {
-                    if (GlobalStuff.FriendInGame)
+                    if (Statics.FriendInGame)
                     {
                         if (!SRSingleton<SystemContext>.Instance.SceneLoader.CurrentSceneGroup.isGameplay)
                         {
                             if (GUI.Button(new Rect(40f, 155f, 100f, 25f), "Join"))
                             {
-                                GlobalStuff.JoinedTheGame = true;
+                                Statics.JoinedTheGame = true;
                                 SendData.RequestSave();
                             }
                         }

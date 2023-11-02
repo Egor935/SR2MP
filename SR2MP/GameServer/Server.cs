@@ -121,19 +121,19 @@ namespace GameServer
             {
                 { (int)Packets.Welcome, ServerHandle.WelcomeReceived },
                 { (int)Packets.UDP, ServerHandle.UDPTestReceived },
-                { (int)Packets.Message, ServerHandle.MessageReceived },
-                { (int)Packets.Movement, ServerHandle.MovementReceived },
-                { (int)Packets.Animations, ServerHandle.AnimationsReceived },
-                { (int)Packets.CameraAngle, ServerHandle.CameraAngleReceived },
-                { (int)Packets.VacconeState, ServerHandle.VacconeStateReceived },
-                { (int)Packets.GameMode, ServerHandle.GameModeReceived },
-                { (int)Packets.Time, ServerHandle.TimeReceived },
-                { (int)Packets.SaveRequest, ServerHandle.SaveRequestReceived },
-                { (int)Packets.Save, ServerHandle.SaveReceived },
-                { (int)Packets.LandPlotUpgrade, ServerHandle.LandPlotUpgradeReceived },
-                { (int)Packets.LandPlotReplace, ServerHandle.LandPlotReplaceReceived },
-                { (int)Packets.Sleep, ServerHandle.SleepReceived },
-                { (int)Packets.Currency, ServerHandle.CurrencyReceived }
+                { (int)Packets.Message, ServerHandle.TCPDataReceived },
+                { (int)Packets.Movement, ServerHandle.UDPDataReceived },
+                { (int)Packets.Animations, ServerHandle.UDPDataReceived },
+                { (int)Packets.CameraAngle, ServerHandle.UDPDataReceived },
+                { (int)Packets.VacconeState, ServerHandle.TCPDataReceived },
+                { (int)Packets.GameMode, ServerHandle.TCPDataReceived },
+                { (int)Packets.Time, ServerHandle.UDPDataReceived },
+                { (int)Packets.SaveRequest, ServerHandle.TCPDataReceived },
+                { (int)Packets.Save, ServerHandle.TCPDataReceived },
+                { (int)Packets.LandPlotUpgrade, ServerHandle.TCPDataReceived },
+                { (int)Packets.LandPlotReplace, ServerHandle.TCPDataReceived },
+                { (int)Packets.Sleep, ServerHandle.TCPDataReceived },
+                { (int)Packets.Currency, ServerHandle.TCPDataReceived }
             };
             MelonLogger.Msg("Server: Initialized packets.");
         }

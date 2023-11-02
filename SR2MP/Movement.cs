@@ -9,8 +9,6 @@ namespace SR2MP
 {
     public class Movement : MonoBehaviour
     {
-        public Movement(IntPtr ptr) : base(ptr) { }
-
         public Vector3 ReceivedPosition = new Vector3(529.1114f, 17.11f, 338.0007f);
         public float ReceivedRotation;
 

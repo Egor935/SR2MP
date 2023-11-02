@@ -10,10 +10,7 @@ namespace SR2MP
 {
     public class Vacpack : MonoBehaviour
     {
-        public Vacpack(IntPtr ptr) : base(ptr) { }
-
         public float ReceivedCameraAngle;
-        private bool setVaccone = true;
         private GameObject _Bone;
         private GameObject _BoneBarrel;
         private GameObject _Vaccone;
@@ -42,7 +39,7 @@ namespace SR2MP
 
             _Bone.transform.localRotation = Quaternion.Lerp(startRot, finishRot, convert);
 
-            if (setVaccone)
+            if (_Vaccone == null)
             {
                 if (SRSingleton<SystemContext>.Instance.SceneLoader.currentSceneGroup.isGameplay)
                 {
@@ -55,7 +52,6 @@ namespace SR2MP
                         _Vaccone.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
                         _VacconeAnimator = _Vaccone.GetComponent<Animator>();
                         _Vaccone.active = true;
-                        setVaccone = false;
                     }
                 }
             }

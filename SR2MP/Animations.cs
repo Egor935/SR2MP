@@ -9,8 +9,6 @@ namespace SR2MP
 {
     public class Animations : MonoBehaviour
     {
-        public Animations(IntPtr ptr) : base(ptr) { }
-
         private Animator _Animator;
 
         public float HM;

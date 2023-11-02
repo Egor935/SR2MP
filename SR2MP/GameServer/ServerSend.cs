@@ -80,69 +80,17 @@ namespace GameServer
             }
         }
 
-        public static void SendMessage(int id, Packet _packet)
+        public static void SendData(int id, Packet _packet, int type)
         {
-            SendTCPDataToAll(id, _packet);
-        }
-
-        public static void SendMovement(int id, Packet _packet)
-        {
-            SendUDPDataToAll(id, _packet);
-        }
-
-        public static void SendAnimations(int id, Packet _packet)
-        {
-            SendUDPDataToAll(id, _packet);
-        }
-
-        public static void SendCameraAngle(int id, Packet _packet)
-        {
-            SendUDPDataToAll(id, _packet);
-        }
-
-        public static void SendVacconeState(int id, Packet _packet)
-        {
-            SendTCPDataToAll(id, _packet);
-        }
-
-        public static void SendGameMode(int id, Packet _packet)
-        {
-            SendTCPDataToAll(id, _packet);
-        }
-
-        public static void SendTime(int id, Packet _packet)
-        {
-            SendUDPDataToAll(id, _packet);
-        }
-
-        public static void SendSaveRequest(int id, Packet _packet)
-        {
-            SendTCPDataToAll(id, _packet);
-        }
-
-        public static void SendSave(int id, Packet _packet)
-        {
-            SendTCPDataToAll(id, _packet);
-        }
-
-        public static void SendLandPlotUpgrade(int id, Packet _packet)
-        {
-            SendTCPDataToAll(id, _packet);
-        }
-
-        public static void SendLandPlotReplace(int id, Packet _packet)
-        {
-            SendTCPDataToAll(id, _packet);
-        }
-
-        public static void SendSleep(int id, Packet _packet)
-        {
-            SendTCPDataToAll(id, _packet);
-        }
-
-        public static void SendCurrency(int id, Packet _packet)
-        {
-            SendTCPDataToAll(id, _packet);
+            switch (type)
+            {
+                case 0:
+                    SendTCPDataToAll(id, _packet);
+                    break;
+                case 1:
+                    SendUDPDataToAll(id, _packet);
+                    break;
+            }
         }
         #endregion
     }

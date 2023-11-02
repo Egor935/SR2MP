@@ -12,11 +12,11 @@ namespace SR2MP
 {
     public class Loader : MelonMod
     {
-        public const string ModVersion = "0.1.0";
+        public const string ModVersion = "0.1.1";
 
         public override void OnInitializeMelon()
         {
-            ClassInjector.RegisterTypeInIl2Cpp<Main>();
+            ClassInjector.RegisterTypeInIl2Cpp<MultiplayerMain>();
             ClassInjector.RegisterTypeInIl2Cpp<UI>();
             ClassInjector.RegisterTypeInIl2Cpp<SteamLobby>();
             ClassInjector.RegisterTypeInIl2Cpp<ReadData>();
@@ -37,7 +37,7 @@ namespace SR2MP
         private void CreateSR2MP()
         {
             var SR2MP = new GameObject("SR2MP");
-            SR2MP.AddComponent<Main>();
+            SR2MP.AddComponent<MultiplayerMain>();
             SR2MP.AddComponent<UI>();
             DontDestroyOnLoad(SR2MP);
         }
