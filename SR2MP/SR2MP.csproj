@@ -97,6 +97,7 @@
     <Compile Include="GameServer\ThreadManager.cs" />
     <Compile Include="Statics.cs" />
     <Compile Include="HandleData.cs" />
+    <Compile Include="HandleSlimes.cs" />
     <Compile Include="Loader.cs" />
     <Compile Include="MultiplayerMain.cs" />
     <Compile Include="Movement.cs" />

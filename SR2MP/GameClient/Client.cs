@@ -273,7 +273,8 @@ public class Client : MonoBehaviour
             { (int)Packets.LandPlotUpgrade, HandleData.HandleLandPlotUpgrade },
             { (int)Packets.LandPlotReplace, HandleData.HandleLandPlotReplace },
             { (int)Packets.Sleep, HandleData.HandleSleep },
-            { (int)Packets.Currency, HandleData.HandleCurrency }
+            { (int)Packets.Currency, HandleData.HandleCurrency },
+            { (int)Packets.Actors, HandleData.HandleActors }
         };
         MelonLogger.Msg("Client: Initialized packets.");
     }

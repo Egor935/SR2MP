@@ -12,7 +12,7 @@ namespace SR2MP
 {
     public class Loader : MelonMod
     {
-        public const string ModVersion = "0.1.1";
+        public const string ModVersion = "0.1.2";
 
         public override void OnInitializeMelon()
         {
@@ -27,6 +27,7 @@ namespace SR2MP
             ClassInjector.RegisterTypeInIl2Cpp<CustomLobby>();
             ClassInjector.RegisterTypeInIl2Cpp<Client>();
             ClassInjector.RegisterTypeInIl2Cpp<ThreadManager>();
+            ClassInjector.RegisterTypeInIl2Cpp<HandleSlimes>();
         }
 
         public override void OnLateInitializeMelon()

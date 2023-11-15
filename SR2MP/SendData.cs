@@ -141,5 +141,47 @@ namespace SR2MP
                 Networking.SendTCPData(_packet);
             }
         }
+
+        public static void SendActors(Dictionary<long, IdentifiableModel> actors)
+        {
+            Packet _packet = new Packet((int)Packets.Actors);
+            {
+                if (actors.Count >= 42)
+                {
+                    _packet.Write(42);
+                }
+                else
+                {
+                    _packet.Write(actors.Count);
+                }
+            
+                int count = 0;
+                foreach (var key in actors.Keys)
+                {
+                    count++;
+            
+                    var actorTransform = actors[key].Transform;
+                    _packet.Write((int)key);
+                    _packet.Write(actorTransform.position);
+                    _packet.Write(actorTransform.rotation.eulerAngles);
+            
+                    if (count % 42 == 0 || count == actors.Count)
+                    {
+                        Networking.SendUDPData(_packet);
+                        _packet = new Packet((int)Packets.Actors);
+                        if (actors.Count - count >= 42)
+                        {
+                            _packet.Write(42);
+                        }
+                        else
+                        {
+                            _packet.Write(actors.Count - count);
+                        }
+                    }
+                }
+            
+                _packet.Dispose();
+            }
+        }
     }
 }

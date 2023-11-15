@@ -6,11 +6,12 @@ using Il2CppMonomiPark.SlimeRancher.Player;
 using Il2CppMonomiPark.SlimeRancher.SceneManagement;
 using Il2CppMonomiPark.SlimeRancher.UI;
 using Il2CppMonomiPark.SlimeRancher.UI.MainMenu;
+using Il2CppSystem.Collections.Generic;
 using Il2CppSystem.IO;
 using MelonLoader;
 using SR2MP.Patches;
 using System;
-using System.Collections.Generic;
+//using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -67,7 +68,7 @@ namespace SR2MP
             {
                 if (SRSingleton<SceneContext>.Instance.TimeDirector != null)
                 {
-                    SRSingleton<SceneContext>.Instance.TimeDirector.worldModel.worldTime = time;
+                    SRSingleton<SceneContext>.Instance.TimeDirector._worldModel.worldTime = time;
                 }
             }
         }
@@ -153,9 +154,47 @@ namespace SR2MP
 
             if (SRSingleton<SceneContext>.Instance != null)
             {
-                int difference = value - SRSingleton<SceneContext>.Instance.PlayerState.model.currency;
-                SRSingleton<SceneContext>.Instance.PlayerState.model.currency = value;
+                int difference = value - SRSingleton<SceneContext>.Instance.PlayerState._model.currency;
+                SRSingleton<SceneContext>.Instance.PlayerState._model.currency = value;
                 SRSingleton<PopupElementsUI>.Instance.CreateCoinsPopup(difference, PlayerState.CoinsType.NORM);
+            }
+        }
+
+        public static void HandleActors(Packet _packet)
+        {
+            int count = _packet.ReadInt();
+
+            Dictionary<long, IdentifiableModel> identifiables = null;
+            if (SRSingleton<SceneContext>.Instance != null)
+            {
+                identifiables = SRSingleton<SceneContext>.Instance.GameModel.identifiables;
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                var id = _packet.ReadInt();
+                var position = _packet.ReadVector3();
+                var rotation = _packet.ReadVector3();
+
+                if (identifiables != null)
+                {
+                    if (identifiables.ContainsKey(id))
+                    {
+                        if (HandleSlimes.Instance != null)
+                        {
+                            if (HandleSlimes.Instance.Positions.ContainsKey(id))
+                            {
+                                HandleSlimes.Instance.Positions[id] = position;
+                                HandleSlimes.Instance.Rotations[id] = rotation;
+                            }
+                            else
+                            {
+                                HandleSlimes.Instance.Positions.Add(id, position);
+                                HandleSlimes.Instance.Rotations.Add(id, rotation);
+                            }
+                        }
+                    }
+                }
             }
         }
     }

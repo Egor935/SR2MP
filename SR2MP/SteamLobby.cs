@@ -71,7 +71,7 @@ namespace SR2MP
                 {
                     if (Statics.FriendInGame)
                     {
-                        if (!SRSingleton<SystemContext>.Instance.SceneLoader.CurrentSceneGroup.isGameplay)
+                        if (!SRSingleton<SystemContext>.Instance.SceneLoader.CurrentSceneGroup.IsGameplay)
                         {
                             if (GUI.Button(new Rect(40f, 185f, 100f, 25f), "Join"))
                             {

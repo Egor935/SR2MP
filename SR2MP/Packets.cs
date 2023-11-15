@@ -20,7 +20,8 @@ public enum Packets
     LandPlotUpgrade,
     LandPlotReplace,
     Sleep,
-    Currency
+    Currency,
+    Actors
 }
 
 public class Packet : IDisposable

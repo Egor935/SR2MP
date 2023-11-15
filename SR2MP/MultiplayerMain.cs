@@ -91,6 +91,12 @@ namespace SR2MP
             _BeatrixAnimator.runtimeAnimatorController = PlayerAnimator.runtimeAnimatorController;
             _BeatrixAnimator.updateMode = AnimatorUpdateMode.AnimatePhysics;
             Player.gameObject.AddComponent<ReadData>();
+
+            if (Statics.JoinedTheGame)
+            {
+                var slimeHandler = new GameObject("SlimeHandler");
+                slimeHandler.AddComponent<HandleSlimes>();
+            }
         }
     }
 }

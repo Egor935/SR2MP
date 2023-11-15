@@ -41,7 +41,7 @@ namespace SR2MP
 
             if (_Vaccone == null)
             {
-                if (SRSingleton<SystemContext>.Instance.SceneLoader.currentSceneGroup.isGameplay)
+                if (SRSingleton<SystemContext>.Instance.SceneLoader.CurrentSceneGroup.IsGameplay)
                 {
                     var vaccone = GameObject.Find("PlayerCameraKCC/First Person Objects/vac shape/Vaccone Prefab");
                     if (vaccone != null)

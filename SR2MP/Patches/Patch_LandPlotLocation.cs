@@ -17,7 +17,7 @@ namespace SR2MP.Patches
             if (!Statics.HandlePacket)
             {
                 var id = __instance.Id;
-                var type = (int)replacementPrefab.GetComponent<LandPlot>().typeId;
+                var type = (int)replacementPrefab.GetComponent<LandPlot>().TypeId;
                 SendData.SendLandPlotReplace(id, type);
             }
         }

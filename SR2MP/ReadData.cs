@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static Il2Cpp.ActorVortexer;
 
 namespace SR2MP
 {
@@ -85,6 +86,9 @@ namespace SR2MP
             {
                 ReadTime();
                 SendData.SendTime(_Time);
+
+                ReadActors();
+                SendData.SendActors(_Actors);
             }
         }
 
@@ -107,7 +111,7 @@ namespace SR2MP
 
         private void ReadCameraAngle()
         {
-            _CameraAngle = _Player.cameraController.targetVerticalAngle;
+            _CameraAngle = _Player._cameraController._targetVerticalAngle;
         }
 
         private void ReadVacconeState()
@@ -117,7 +121,7 @@ namespace SR2MP
 
         private void ReadTime()
         {
-            _Time = SRSingleton<SceneContext>.Instance.TimeDirector.worldModel.worldTime;
+            _Time = SRSingleton<SceneContext>.Instance.TimeDirector._worldModel.worldTime;
         }
 
         private void ReadGameMode()
@@ -125,8 +129,53 @@ namespace SR2MP
             var _SystemContext = SRSingleton<SystemContext>.Instance;
             if (_SystemContext != null)
             {
-                _GameMode = _SystemContext.SceneLoader.CurrentSceneGroup.isGameplay;
+                _GameMode = _SystemContext.SceneLoader.CurrentSceneGroup.IsGameplay;
             }
+        }
+
+        private int identifiablesCountCached;
+        private bool slimesAfterLoadingFound;
+        private void ReadActors()
+        {
+            if (!slimesAfterLoadingFound)
+            {
+                var identifiables = SRSingleton<SceneContext>.Instance.GameModel.identifiables;
+                if (identifiables.Count != identifiablesCountCached)
+                {
+                    var syncingSlimes = new Dictionary<long, IdentifiableModel>();
+                    var keys = identifiables.Keys;
+                    foreach (var key in keys)
+                    {
+                        var identifiable = identifiables[key];
+                        if (identifiable != null)
+                        {
+                            if (identifiable.GetIl2CppType().Name.Equals(nameof(SlimeModel)))
+                            {
+                                if (identifiable.Transform != null)
+                                {
+                                    syncingSlimes.Add(key, identifiable);
+                                }
+                            }
+                        }
+                    }
+                    _Actors = syncingSlimes;
+                    identifiablesCountCached = identifiables.Count;
+                }
+                else
+                {
+                    slimesAfterLoadingFound = true;
+                }
+            }
+
+            var newDictionary = new Dictionary<long, IdentifiableModel>();
+            foreach (var key in _Actors.Keys)
+            {
+                if (_Actors[key].Transform != null)
+                {
+                    newDictionary.Add(key, _Actors[key]);
+                }
+            }
+            _Actors = newDictionary;
         }
     }
 }
