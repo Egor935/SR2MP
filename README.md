@@ -1,4 +1,5 @@
 Multiplayer mod for Slime Rancher 2
+
 Discord server: https://discord.gg/JY8zDTuaGW
 
 **Useful stuff**
