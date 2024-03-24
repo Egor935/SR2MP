@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SR2MP
 {
-    [BepInPlugin("Egor_ICE", "SR2MP", "0.2.0")]
+    [BepInPlugin("Egor_ICE", "SR2MP", "0.1.3")]
     public class Loader : BasePlugin
     {
         public override void Load()
