@@ -1,6 +1,4 @@
-﻿using Il2Cpp;
-using MelonLoader;
-using Steamworks;
+﻿using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +10,6 @@ namespace SR2MP
 {
     public class SteamLobby : MonoBehaviour
     {
-        #region Variables
         public static SteamLobby Instance;
 
         //Callbacks
@@ -22,12 +19,14 @@ namespace SR2MP
 
         //Steam
         public CSteamID Lobby;
-        public CSteamID Receiver;
+        public CSteamID Receiver = CSteamID.Nil;
 
         //Stuff
         private bool allowCreateLobby = true;
         private bool getSecondPlayer;
-        #endregion
+        private string secondPlayerName = "None";
+
+        public static bool Host = true;
 
         public void SteamMenu()
         {
@@ -36,7 +35,7 @@ namespace SR2MP
                 if (GUI.Button(new Rect(15f, 35f, 150f, 25f), "Create lobby"))
                 {
                     CreateLobby();
-                    Statics.Host = true;
+                    Host = true;
                     allowCreateLobby = false;
                 }
 
@@ -60,23 +59,23 @@ namespace SR2MP
             }
 
             GUI.Label(new Rect(15f, 95f, 150f, 25f), "Connected friend:");
-            GUI.Label(new Rect(15f, 125f, 150f, 25f), Statics.SecondPlayerName);
+            GUI.Label(new Rect(15f, 125f, 150f, 25f), secondPlayerName);
 
             if (Receiver != CSteamID.Nil)
             {
-                string inGame = Statics.FriendInGame ? "<color=green>YES</color>" : "<color=red>NO</color>";
-                GUI.Label(new Rect(15f, 155f, 150f, 25f), $"In game: {inGame}");
+                string _FriendInGame = Main.FriendInGame ? "<color=green>YES</color>" : "<color=red>NO</color>";
+                GUI.Label(new Rect(15f, 155f, 150f, 25f), $"In game: {_FriendInGame}");
 
-                if (!Statics.JoinedTheGame)
+                if (!Main.Joined)
                 {
-                    if (Statics.FriendInGame)
+                    if (Main.FriendInGame)
                     {
                         if (!SRSingleton<SystemContext>.Instance.SceneLoader.CurrentSceneGroup.IsGameplay)
                         {
                             if (GUI.Button(new Rect(40f, 185f, 100f, 25f), "Join"))
                             {
-                                Statics.JoinedTheGame = true;
-                                SendData.RequestSave();
+                                Main.Joined = true;
+                                SendData.RequestSaveData();
                             }
                         }
                     }
@@ -88,12 +87,14 @@ namespace SR2MP
         {
             Instance = this;
 
-            lobbyCreated = Callback<LobbyCreated_t>.Create(new Callback<LobbyCreated_t>.DispatchDelegate(OnLobbyCreated));
-            gameLobbyJoinRequested = Callback<GameLobbyJoinRequested_t>.Create(new Callback<GameLobbyJoinRequested_t>.DispatchDelegate(OnGameLobbyJoinRequested));
-            lobbyEntered = Callback<LobbyEnter_t>.Create(new Callback<LobbyEnter_t>.DispatchDelegate(OnLobbyEntered));
+            //Create callbacks
+            lobbyCreated = Callback<LobbyCreated_t>.Create(OnLobbyCreated);
+            gameLobbyJoinRequested = Callback<GameLobbyJoinRequested_t>.Create(OnGameLobbyJoinRequested);
+            lobbyEntered = Callback<LobbyEnter_t>.Create(OnLobbyEntered);
 
             Networking.InitializePackets();
         }
+
 
         void Update()
         {
@@ -106,12 +107,13 @@ namespace SR2MP
                 if (secondPlayer != CSteamID.Nil)
                 {
                     Receiver = secondPlayer;
-                    Statics.SecondPlayerName = SteamFriends.GetFriendPersonaName(secondPlayer);
-                    SendData.SendMessage("Welcome to the lobby!");
+                    secondPlayerName = SteamFriends.GetFriendPersonaName(secondPlayer);
+                    SendData.SendMessage("Welcome to the lobby");
                     getSecondPlayer = false;
                 }
             }
         }
+
 
         public void CreateLobby()
         {
@@ -126,20 +128,20 @@ namespace SR2MP
                 return;
             }
 
-            MelonLogger.Msg("Lobby created successefully");
-
             Lobby = new CSteamID(callback.m_ulSteamIDLobby);
+
+            Debug.Log("Lobby created successfully");
         }
 
         public void OnGameLobbyJoinRequested(GameLobbyJoinRequested_t callback)
         {
-            MelonLogger.Msg("Request to join lobby");
+            Debug.Log("Request to join lobby");
             SteamMatchmaking.JoinLobby(callback.m_steamIDLobby);
         }
 
         public void OnLobbyEntered(LobbyEnter_t callback)
         {
-            MelonLogger.Msg("You have successfully joined the lobby");
+            Debug.Log("You have successfully joined the lobby");
 
             var lobbyId = new CSteamID(callback.m_ulSteamIDLobby);
 
@@ -150,10 +152,10 @@ namespace SR2MP
                 if (member != SteamUser.GetSteamID())
                 {
                     Receiver = member;
-                    Statics.SecondPlayerName = SteamFriends.GetFriendPersonaName(member);
-                    SendData.SendMessage($"Player {SteamFriends.GetPersonaName()} successefully connected!");
-                    Statics.Host = false;
+                    secondPlayerName = SteamFriends.GetFriendPersonaName(member);
+                    SendData.SendMessage($"Player {SteamFriends.GetPersonaName()} successefully connected");
                     allowCreateLobby = false;
+                    Host = false;
                 }
             }
         }

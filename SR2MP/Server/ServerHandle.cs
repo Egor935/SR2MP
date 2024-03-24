@@ -1,21 +1,20 @@
-﻿using MelonLoader;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace GameServer
 {
-    class ServerHandle
+    public class ServerHandle
     {
         public static void WelcomeReceived(int _fromClient, Packet _packet)
         {
             int _clientIdCheck = _packet.ReadInt();
             string _username = _packet.ReadString();
 
-            MelonLogger.Msg($"{Server.clients[_fromClient].tcp.socket.Client.RemoteEndPoint} connected successfully and is now player {_fromClient}.");
+            Console.WriteLine($"{Server.clients[_fromClient].tcp.socket.Client.RemoteEndPoint} connected successfully and is now player {_fromClient}.");
             if (_fromClient != _clientIdCheck)
             {
-                MelonLogger.Msg($"Server: Player \"{_username}\" (ID: {_fromClient}) has assumed the wrong client ID ({_clientIdCheck})!");
+                Console.WriteLine($"Player \"{_username}\" (ID: {_fromClient}) has assumed the wrong client ID ({_clientIdCheck})!");
             }
             // TODO: send player into game
         }
@@ -24,17 +23,17 @@ namespace GameServer
         {
             string _msg = _packet.ReadString();
 
-            MelonLogger.Msg($"Server: Received packet via UDP. Contains message: {_msg}");
+            Console.WriteLine($"Received packet via UDP. Contains message: {_msg}");
         }
 
         public static void TCPDataReceived(int _fromClient, Packet _packet)
         {
-            ServerSend.SendData(_fromClient, _packet, 0);
+            ServerSend.ResendTCPData(_fromClient, _packet);
         }
 
         public static void UDPDataReceived(int _fromClient, Packet _packet)
         {
-            ServerSend.SendData(_fromClient, _packet, 1);
+            ServerSend.ResendUDPData(_fromClient, _packet);
         }
     }
 }

@@ -11,17 +11,14 @@ public enum Packets
     Message,
     Movement,
     Animations,
-    CameraAngle,
-    VacconeState,
-    GameMode,
     Time,
-    SaveRequest,
-    Save,
+    InGame,
+    SaveDataRequest,
+    SaveData,
     LandPlotUpgrade,
     LandPlotReplace,
-    Sleep,
     Currency,
-    Actors
+    Sleep
 }
 
 public class Packet : IDisposable

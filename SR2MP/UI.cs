@@ -1,36 +1,23 @@
-﻿using GameServer;
-using Il2Cpp;
-using Steamworks;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static SR2MP.LobbyManager;
 
 namespace SR2MP
 {
     public class UI : MonoBehaviour
     {
-        #region Variables
-        //Menu
         private bool menuState = true;
-        private string menuMode;
 
-        //Donators
-        private WebClient webClient = new WebClient();
-        private int donatorsCount;
-        private List<string> donatorNames = new List<string>();
-        private List<string> donatorAmounts = new List<string>();
+        private Dictionary<string, string> _Donators = new Dictionary<string, string>();
         private int donatorsStartingPoint;
-        #endregion
 
         void OnGUI()
         {
-            //Unity documentation way
             if (Event.current.Equals(Event.KeyboardEvent(KeyCode.BackQuote.ToString())))
             {
                 menuState = !menuState;
@@ -42,17 +29,18 @@ namespace SR2MP
             if (menuState)
             {
                 MainMenu();
+                DonatorsMenu();
 
-                switch (menuMode)
+                switch (CurrentLobbyType)
                 {
-                    case "steam":
+                    case LobbyType.None:
+                        WelcomeMenu();
+                        break;
+                    case LobbyType.Steam:
                         SteamLobby.Instance.SteamMenu();
                         break;
-                    case "custom":
-                        CustomLobby.Instance.CustomMenu();
-                        break;
-                    default:
-                        WelcomeMenu();
+                    case LobbyType.Custom:
+                        CustomLobby.CustomMenu();
                         break;
                 }
             }
@@ -60,11 +48,16 @@ namespace SR2MP
 
         private void MainMenu()
         {
-            #region SR2MP
             GUI.Box(new Rect(10f, 10f, 160f, 300f), "<b>SR2MP</b>");
-            #endregion
 
-            #region Donators
+            if (GUI.Button(new Rect(15f, 280f, 150f, 25f), "Hide (~, Ё, Ö)"))
+            {
+                menuState = false;
+            }
+        }
+
+        private void DonatorsMenu()
+        {
             GUI.Box(new Rect(175f, 10f, 300f, 300f), "<b>Donators</b>");
 
             GUI.Label(new Rect(180f, 35f, 150f, 25f), "<b>Name</b>");
@@ -72,9 +65,9 @@ namespace SR2MP
 
             for (int i = donatorsStartingPoint; i < (donatorsStartingPoint + 8); i++)
             {
-                if (int.TryParse(donatorAmounts[i].Replace(" rubles", null), out int amount))
+                if (int.TryParse(_Donators.Values.ToList()[i].Replace(" Rubles", null), out int amount))
                 {
-                    if ((amount >= 40000))
+                    if (amount >= 40000)
                     {
                         GUI.color = new Color(111f / 255f, 126f / 255f, 206f / 255f);
                     }
@@ -112,8 +105,8 @@ namespace SR2MP
                     }
                 }
 
-                GUI.Label(new Rect(180f, 65f + 30f * (i - donatorsStartingPoint), 150f, 25f), $"<b>{donatorNames[i]}</b>");
-                GUI.Label(new Rect(330f, 65f + 30f * (i - donatorsStartingPoint), 150f, 25f), $"<b>{donatorAmounts[i]}</b>");
+                GUI.Label(new Rect(180f, 65f + 30f * (i - donatorsStartingPoint), 150f, 25f), $"<b>{_Donators.Keys.ToList()[i]}</b>");
+                GUI.Label(new Rect(330f, 65f + 30f * (i - donatorsStartingPoint), 150f, 25f), $"<b>{_Donators.Values.ToList()[i]}</b>");
             }
             GUI.color = Color.cyan;
 
@@ -129,18 +122,13 @@ namespace SR2MP
                 }
             }
 
-            if (donatorsStartingPoint < (donatorsCount - 8))
+            if (donatorsStartingPoint < (_Donators.Count - 8))
             {
                 if (GUI.Button(new Rect(445f, 275f, 25f, 25f), "▼", newButton))
                 {
                     donatorsStartingPoint += 1;
                 }
             }
-            #endregion
-
-            #region Info
-            GUI.Box(new Rect(10f, 315f, 465f, 25f), "You can hide this menu by pressing the Tilde button (~, Ё, Ö)");
-            #endregion
         }
 
         private void WelcomeMenu()
@@ -149,39 +137,31 @@ namespace SR2MP
 
             if (GUI.Button(new Rect(15f, 65f, 150f, 25f), "Steam"))
             {
-                this.gameObject.AddComponent<SteamLobby>();
-                menuMode = "steam";
+                CreateSteamLobby();
             }
 
-            if (GUI.Button(new Rect(15f, 95f, 150f, 25f), "Other (EGS, MS)"))
+            if (GUI.Button(new Rect(15f, 95f, 150f, 25f), "Other (MS, EGS)"))
             {
-                MultiplayerMain.Instance.SteamIsAvailable = false;
-                this.gameObject.AddComponent<CustomLobby>();
-                menuMode = "custom";
+                CreateCustomLobby();
             }
         }
 
         void Start()
         {
-            DownloadListOfDonators();
-
-            if (!MultiplayerMain.Instance.SteamIsAvailable)
-            {
-                this.gameObject.AddComponent<CustomLobby>();
-                menuMode = "custom";
-            }
+            DownloadDonatorsList();
         }
 
-        private void DownloadListOfDonators()
+        private void DownloadDonatorsList()
         {
+            var webClient = new WebClient();
             var rawFile = webClient.DownloadString("https://raw.githubusercontent.com/Egor935/Slime-Rancher-2-Multiplayer/main/Donators.txt");
             var donators = rawFile.Split('\n');
-            donatorsCount = donators.Length;
             foreach (var donator in donators)
             {
                 var info = donator.Split('/');
-                donatorNames.Add(info[0]);
-                donatorAmounts.Add(info[1]);
+                var name = info[0];
+                var amount = info[1];
+                _Donators.Add(name, amount);
             }
         }
     }

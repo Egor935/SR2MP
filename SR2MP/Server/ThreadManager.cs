@@ -1,15 +1,20 @@
-﻿using MelonLoader;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using UnityEngine;
 
 namespace GameServer
 {
-    class ThreadManager
+    public class ThreadManager : MonoBehaviour
     {
         private static readonly List<Action> executeOnMainThread = new List<Action>();
         private static readonly List<Action> executeCopiedOnMainThread = new List<Action>();
         private static bool actionToExecuteOnMainThread = false;
+
+        private void FixedUpdate()
+        {
+            UpdateMain();
+        }
 
         /// <summary>Sets an action to be executed on the main thread.</summary>
         /// <param name="_action">The action to be executed on the main thread.</param>
@@ -17,7 +22,7 @@ namespace GameServer
         {
             if (_action == null)
             {
-                MelonLogger.Msg("Server: No action to execute on main thread!");
+                Console.WriteLine("No action to execute on main thread!");
                 return;
             }
 

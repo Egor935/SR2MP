@@ -1,19 +1,17 @@
-﻿using Il2Cpp;
-using Il2CppMonomiPark.SlimeRancher.DataModel;
-using Il2CppSystem.Collections.Generic;
+﻿using Il2CppMonomiPark.SlimeRancher.DataModel;
+using Il2CppMonomiPark.SlimeRancher.Persist;
 using Il2CppSystem.IO;
-using MelonLoader;
 using System;
-using System.IO.Compression;
-//using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using UnityEngine;
 
 namespace SR2MP
 {
-    public static class SendData
+    public class SendData
     {
         public static void SendMessage(string msg)
         {
@@ -49,33 +47,6 @@ namespace SR2MP
             }
         }
 
-        public static void SendCameraAngle(float angle)
-        {
-            using (Packet _packet = new Packet((int)Packets.CameraAngle))
-            {
-                _packet.Write(angle);
-                Networking.SendUDPData(_packet);
-            }
-        }
-
-        public static void SendVacconeState(bool vacMode)
-        {
-            using (Packet _packet = new Packet((int)Packets.VacconeState))
-            {
-                _packet.Write(vacMode);
-                Networking.SendTCPData(_packet);
-            }
-        }
-
-        public static void SendGameModeSwitch(bool state)
-        {
-            using (Packet _packet = new Packet((int)Packets.GameMode))
-            {
-                _packet.Write(state);
-                Networking.SendTCPData(_packet);
-            }
-        }
-
         public static void SendTime(double time)
         {
             using (Packet _packet = new Packet((int)Packets.Time))
@@ -85,21 +56,29 @@ namespace SR2MP
             }
         }
 
-        public static void RequestSave()
+        public static void SendInGame(bool state)
         {
-            using (Packet _packet = new Packet((int)Packets.SaveRequest))
+            using (Packet _packet = new Packet((int)Packets.InGame))
+            {
+                _packet.Write(state);
+                Networking.SendTCPData(_packet);
+            }
+        }
+
+        public static void RequestSaveData()
+        {
+            using (Packet _packet = new Packet((int)Packets.SaveDataRequest))
             {
                 Networking.SendTCPData(_packet);
             }
         }
 
-        public static void SendSave(MemoryStream save)
+        public static void SendSaveData(byte[] saveData)
         {
-            using (Packet _packet = new Packet((int)Packets.Save))
+            using (Packet _packet = new Packet((int)Packets.SaveData))
             {
-                var arraySave = save.ToArray();
-                _packet.Write(arraySave.Length);
-                _packet.Write(arraySave);
+                _packet.Write(saveData.Length);
+                _packet.Write(saveData);
                 Networking.SendTCPData(_packet);
             }
         }
@@ -114,12 +93,21 @@ namespace SR2MP
             }
         }
 
-        public static void SendLandPlotReplace(string name, int type)
+        public static void SendLandPlotReplace(string id, int type)
         {
             using (Packet _packet = new Packet((int)Packets.LandPlotReplace))
             {
-                _packet.Write(name);
+                _packet.Write(id);
                 _packet.Write(type);
+                Networking.SendTCPData(_packet);
+            }
+        }
+
+        public static void SendCurrency(int currency)
+        {
+            using (Packet _packet = new Packet((int)Packets.Currency))
+            {
+                _packet.Write(currency);
                 Networking.SendTCPData(_packet);
             }
         }
@@ -130,57 +118,6 @@ namespace SR2MP
             {
                 _packet.Write(endTime);
                 Networking.SendTCPData(_packet);
-            }
-        }
-
-        public static void SendCurrency(int value)
-        {
-            using (Packet _packet = new Packet((int)Packets.Currency))
-            {
-                _packet.Write(value);
-                Networking.SendTCPData(_packet);
-            }
-        }
-
-        public static void SendActors(Dictionary<long, IdentifiableModel> actors)
-        {
-            Packet _packet = new Packet((int)Packets.Actors);
-            {
-                if (actors.Count >= 42)
-                {
-                    _packet.Write(42);
-                }
-                else
-                {
-                    _packet.Write(actors.Count);
-                }
-            
-                int count = 0;
-                foreach (var key in actors.Keys)
-                {
-                    count++;
-            
-                    var actorTransform = actors[key].Transform;
-                    _packet.Write((int)key);
-                    _packet.Write(actorTransform.position);
-                    _packet.Write(actorTransform.rotation.eulerAngles);
-            
-                    if (count % 42 == 0 || count == actors.Count)
-                    {
-                        Networking.SendUDPData(_packet);
-                        _packet = new Packet((int)Packets.Actors);
-                        if (actors.Count - count >= 42)
-                        {
-                            _packet.Write(42);
-                        }
-                        else
-                        {
-                            _packet.Write(actors.Count - count);
-                        }
-                    }
-                }
-            
-                _packet.Dispose();
             }
         }
     }

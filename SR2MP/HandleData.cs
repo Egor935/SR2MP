@@ -1,63 +1,47 @@
-﻿using Il2Cpp;
-using Il2CppInterop.Runtime;
-using Il2CppMonomiPark.SlimeRancher;
-using Il2CppMonomiPark.SlimeRancher.DataModel;
+﻿using Il2CppMonomiPark.SlimeRancher.DataModel;
 using Il2CppMonomiPark.SlimeRancher.Player;
-using Il2CppMonomiPark.SlimeRancher.SceneManagement;
 using Il2CppMonomiPark.SlimeRancher.UI;
-using Il2CppMonomiPark.SlimeRancher.UI.MainMenu;
-using Il2CppSystem.Collections.Generic;
-using Il2CppSystem.IO;
-using MelonLoader;
-using SR2MP.Patches;
 using System;
-//using System.Collections.Generic;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using UnityEngine;
 
 namespace SR2MP
 {
-    public static class HandleData
+    public class HandleData
     {
         public static void HandleMessage(Packet _packet)
         {
             var msg = _packet.ReadString();
-            MelonLogger.Msg(msg);
+            Console.WriteLine(msg);
         }
 
         public static void HandleMovement(Packet _packet)
         {
-            Beatrix.Instance.BeatrixMovement.ReceivedPosition = _packet.ReadVector3();
-            Beatrix.Instance.BeatrixMovement.ReceivedRotation = _packet.ReadFloat();
+            if (NetworkPlayer.Instance != null)
+            {
+                NetworkPlayer.Instance.Movement.ReceivedPosition = _packet.ReadVector3();
+                NetworkPlayer.Instance.Movement.ReceivedRotation = _packet.ReadFloat();
+                NetworkPlayer.Instance.Movement.MovementReceived = true;
+            }
         }
 
         public static void HandleAnimations(Packet _packet)
         {
-            Beatrix.Instance.BeatrixAnimations.HM = _packet.ReadFloat();
-            Beatrix.Instance.BeatrixAnimations.FM = _packet.ReadFloat();
-            Beatrix.Instance.BeatrixAnimations.Yaw = _packet.ReadFloat();
-            Beatrix.Instance.BeatrixAnimations.AS = _packet.ReadInt();
-            Beatrix.Instance.BeatrixAnimations.Moving = _packet.ReadBool();
-            Beatrix.Instance.BeatrixAnimations.HS = _packet.ReadFloat();
-            Beatrix.Instance.BeatrixAnimations.FS = _packet.ReadFloat();
-        }
-
-        public static void HandleCameraAngle(Packet _packet)
-        {
-            Beatrix.Instance.BeatrixVacpack.ReceivedCameraAngle = _packet.ReadFloat();
-        }
-
-        public static void HandleVacconeState(Packet _packet)
-        {
-            Beatrix.Instance.BeatrixVacpack.VacMode = _packet.ReadBool();
-        }
-
-        public static void HandleGameModeSwitch(Packet _packet)
-        {
-            Statics.FriendInGame = _packet.ReadBool();
+            if (NetworkPlayer.Instance != null)
+            {
+                NetworkPlayer.Instance.Animations.HM = _packet.ReadFloat();
+                NetworkPlayer.Instance.Animations.FM = _packet.ReadFloat();
+                NetworkPlayer.Instance.Animations.Yaw = _packet.ReadFloat();
+                NetworkPlayer.Instance.Animations.AS = _packet.ReadInt();
+                NetworkPlayer.Instance.Animations.Moving = _packet.ReadBool();
+                NetworkPlayer.Instance.Animations.HS = _packet.ReadFloat();
+                NetworkPlayer.Instance.Animations.FS = _packet.ReadFloat();
+                NetworkPlayer.Instance.Animations.AnimationsReceived = true;
+            }
         }
 
         public static void HandleTime(Packet _packet)
@@ -73,30 +57,49 @@ namespace SR2MP
             }
         }
 
-        public static void SaveRequested(Packet _packet)
+        public static void HandleInGame(Packet _packet)
         {
-            SRSingleton<GameContext>.Instance.AutoSaveDirector.SaveGame();
-
-            MemoryStream memoryStream = new MemoryStream();
-            {
-                var _ASD = SRSingleton<GameContext>.Instance.AutoSaveDirector;
-                _ASD.SavedGame.Save(memoryStream);
-                memoryStream.Seek(0L, SeekOrigin.Begin);
-            }
-
-            SendData.SendSave(memoryStream);
+            var inGame = _packet.ReadBool();
+            Main.FriendInGame = inGame;
         }
 
-        public static void HandleSave(Packet _packet)
+        public static void HandleSaveDataRequest(Packet _packet)
+        {
+            var memoryStream = new Il2CppSystem.IO.MemoryStream();
+            SRSingleton<GameContext>.Instance.AutoSaveDirector.SaveGame();
+            SRSingleton<GameContext>.Instance.AutoSaveDirector.SavedGame.Save(memoryStream);
+
+            var arraySave = memoryStream.ToArray();
+            using (MemoryStream outputStream = new MemoryStream())
+            {
+                using (GZipStream gzipStream = new GZipStream(outputStream, CompressionMode.Compress))
+                {
+                    gzipStream.Write(arraySave, 0, arraySave.Length);
+                }
+                arraySave = outputStream.ToArray();
+            }
+
+            SendData.SendSaveData(arraySave);
+        }
+
+        public static void HandleSaveData(Packet _packet)
         {
             var length = _packet.ReadInt();
             var array = _packet.ReadBytes(length);
 
-            MemoryStream save = new MemoryStream(array);
-            save.Seek(0L, SeekOrigin.Begin);
+            using (MemoryStream inputStream = new MemoryStream(array))
+            {
+                using (GZipStream gzipStream = new GZipStream(inputStream, CompressionMode.Decompress))
+                {
+                    using (MemoryStream outputStream = new MemoryStream())
+                    {
+                        gzipStream.CopyTo(outputStream);
+                        array = outputStream.ToArray();
+                    }
+                }
+            }
 
-            SavedGame_Load.SaveStream = save;
-            FileStorageProvider_GetGameData.HandleSave = true;
+            FileStorageProvider_GetGameData.ReceivedSave = new Il2CppSystem.IO.MemoryStream(array);
             SRSingleton<GameContext>.Instance.AutoSaveDirector.BeginLoad(null, null, null);
         }
 
@@ -138,16 +141,6 @@ namespace SR2MP
             }
         }
 
-        public static void HandleSleep(Packet _packet)
-        {
-            var endTime = _packet.ReadDouble();
-
-            if (SRSingleton<LockOnDeath>.Instance != null)
-            {
-                SRSingleton<LockOnDeath>.Instance.LockUntil(endTime, 0f);
-            }
-        }
-
         public static void HandleCurrency(Packet _packet)
         {
             var value = _packet.ReadInt();
@@ -160,41 +153,13 @@ namespace SR2MP
             }
         }
 
-        public static void HandleActors(Packet _packet)
+        public static void HandleSleep(Packet _packet)
         {
-            int count = _packet.ReadInt();
+            var endTime = _packet.ReadDouble();
 
-            Dictionary<long, IdentifiableModel> identifiables = null;
-            if (SRSingleton<SceneContext>.Instance != null)
+            if (SRSingleton<LockOnDeath>.Instance != null)
             {
-                identifiables = SRSingleton<SceneContext>.Instance.GameModel.identifiables;
-            }
-
-            for (int i = 0; i < count; i++)
-            {
-                var id = _packet.ReadInt();
-                var position = _packet.ReadVector3();
-                var rotation = _packet.ReadVector3();
-
-                if (identifiables != null)
-                {
-                    if (identifiables.ContainsKey(id))
-                    {
-                        if (HandleSlimes.Instance != null)
-                        {
-                            if (HandleSlimes.Instance.Positions.ContainsKey(id))
-                            {
-                                HandleSlimes.Instance.Positions[id] = position;
-                                HandleSlimes.Instance.Rotations[id] = rotation;
-                            }
-                            else
-                            {
-                                HandleSlimes.Instance.Positions.Add(id, position);
-                                HandleSlimes.Instance.Rotations.Add(id, rotation);
-                            }
-                        }
-                    }
-                }
+                SRSingleton<LockOnDeath>.Instance.LockUntil(endTime, 0f);
             }
         }
     }

@@ -1,6 +1,4 @@
-﻿using MelonLoader;
-using SR2MP;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using UnityEngine;
@@ -12,7 +10,7 @@ public class ClientHandle : MonoBehaviour
         string _msg = _packet.ReadString();
         int _myId = _packet.ReadInt();
 
-        MelonLogger.Msg($"Client: Message from server: {_msg}");
+        Debug.Log($"Message from server: {_msg}");
         Client.instance.myId = _myId;
         ClientSend.WelcomeReceived();
 
@@ -23,7 +21,7 @@ public class ClientHandle : MonoBehaviour
     {
         string _msg = _packet.ReadString();
 
-        MelonLogger.Msg($"Client: Received packet via UDP. Contains message: {_msg}");
+        Debug.Log($"Received packet via UDP. Contains message: {_msg}");
         ClientSend.UDPTestReceived();
     }
 }

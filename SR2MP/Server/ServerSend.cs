@@ -4,7 +4,7 @@ using System.Text;
 
 namespace GameServer
 {
-    class ServerSend
+    public class ServerSend
     {
         private static void SendTCPData(int _toClient, Packet _packet)
         {
@@ -80,17 +80,14 @@ namespace GameServer
             }
         }
 
-        public static void SendData(int id, Packet _packet, int type)
+        public static void ResendTCPData(int _fromClient, Packet _packet)
         {
-            switch (type)
-            {
-                case 0:
-                    SendTCPDataToAll(id, _packet);
-                    break;
-                case 1:
-                    SendUDPDataToAll(id, _packet);
-                    break;
-            }
+            SendTCPDataToAll(_fromClient, _packet);
+        }
+
+        public static void ResendUDPData(int _fromClient, Packet _packet)
+        {
+            SendTCPDataToAll(_fromClient, _packet);
         }
         #endregion
     }

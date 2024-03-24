@@ -1,6 +1,4 @@
 ﻿using GameServer;
-using Il2Cpp;
-using Il2CppMonomiPark.SlimeRancher.DataModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,32 +10,35 @@ namespace SR2MP
 {
     public class CustomLobby : MonoBehaviour
     {
-        public static CustomLobby Instance;
-
         //Stuff
-        private bool allowToHostServer = true;
-        private bool allowToConnectServer = true;
+        private static bool allowToHostServer = true;
+        private static bool allowToConnectServer = true;
+        public static bool Host;
 
-        public void CustomMenu()
+        public static string ip = "127.0.0.1";
+
+        public static void CustomMenu()
         {
             if (allowToHostServer && allowToConnectServer)
             {
-                Client.instance.ip = GUI.TextField(new Rect(15f, 35f, 150f, 25f), Client.instance.ip);
+                ip = GUI.TextField(new Rect(15f, 35f, 150f, 25f), ip);
             }
             else
             {
-                GUI.Label(new Rect(15f, 35f, 150f, 25f), Client.instance.ip);
+                GUI.Label(new Rect(15f, 35f, 150f, 25f), ip);
             }
 
             if (allowToHostServer)
             {
                 if (GUI.Button(new Rect(15f, 65f, 150f, 25f), "Host server"))
                 {
-                    ServerInit.Start();
+                    CreateServer();
+
+                    Server.Start(2, 26950);
                     Client.instance.ConnectToServer();
                     allowToHostServer = false;
                     allowToConnectServer = false;
-                    Statics.Host = true;
+                    Host = true;
                 }
             }
             else
@@ -59,43 +60,30 @@ namespace SR2MP
                 GUI.Label(new Rect(15f, 95f, 150f, 25f), "Connect to server");
             }
 
-            //GUI.Label(new Rect(15f, 125f, 150f, 25f), "Connected friend:");
-            //GUI.Label(new Rect(15f, 155f, 150f, 25f), GlobalStuff.SecondPlayerName);
+            string _FirendInGame = Main.FriendInGame ? "<color=green>YES</color>" : "<color=red>NO</color>";
+            GUI.Label(new Rect(15f, 125f, 150f, 25f), $"Friend in game: {_FirendInGame}");
 
-            //if (GlobalStuff.SecondPlayerName != "None")
+            if (!Main.Joined)
             {
-                string inGame = Statics.FriendInGame ? "<color=green>YES</color>" : "<color=red>NO</color>";
-                GUI.Label(new Rect(15f, 125f, 150f, 25f), $"Friend in game: {inGame}");
-
-                if (!Statics.JoinedTheGame)
+                if (Main.FriendInGame)
                 {
-                    if (Statics.FriendInGame)
+                    if (!SRSingleton<SystemContext>.Instance.SceneLoader.CurrentSceneGroup.IsGameplay)
                     {
-                        if (!SRSingleton<SystemContext>.Instance.SceneLoader.CurrentSceneGroup.IsGameplay)
+                        if (GUI.Button(new Rect(40f, 155f, 100f, 25f), "Join"))
                         {
-                            if (GUI.Button(new Rect(40f, 155f, 100f, 25f), "Join"))
-                            {
-                                Statics.JoinedTheGame = true;
-                                SendData.RequestSave();
-                            }
+                            Main.Joined = true;
+                            SendData.RequestSaveData();
                         }
                     }
                 }
             }
         }
 
-        void Start()
+        private static void CreateServer()
         {
-            Instance = this;
-            CreateCustomClientManager();
-        }
-
-        public static void CreateCustomClientManager()
-        {
-            var clientManager = new GameObject("ClientManager");
-            DontDestroyOnLoad(clientManager);
-            clientManager.AddComponent<Client>();
-            clientManager.AddComponent<ThreadManager>();
+            var server = new GameObject("Server");
+            server.AddComponent<GameServer.ThreadManager>();
+            DontDestroyOnLoad(server);
         }
     }
 }

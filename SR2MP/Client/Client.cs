@@ -4,7 +4,6 @@ using UnityEngine;
 using System.Net;
 using System.Net.Sockets;
 using System;
-using MelonLoader;
 using SR2MP;
 
 public class Client : MonoBehaviour
@@ -12,7 +11,7 @@ public class Client : MonoBehaviour
     public static Client instance;
     public static int dataBufferSize = 4096;
 
-    public string ip = "127.0.0.1";
+    public string ip => CustomLobby.ip;
     public int port = 26950;
     public int myId = 0;
     public TCP tcp;
@@ -29,7 +28,7 @@ public class Client : MonoBehaviour
         }
         else if (instance != this)
         {
-            MelonLogger.Msg("Instance already exists, destroying object!");
+            Debug.Log("Instance already exists, destroying object!");
             Destroy(this);
         }
     }
@@ -42,7 +41,7 @@ public class Client : MonoBehaviour
 
     public void ConnectToServer()
     {
-        InitializeClientData();
+        InitializePackets();
         udp.endPoint = new IPEndPoint(IPAddress.Parse(instance.ip), instance.port);
         tcp.Connect();
     }
@@ -94,7 +93,7 @@ public class Client : MonoBehaviour
             }
             catch (Exception _ex)
             {
-                MelonLogger.Msg($"Client: Error sending data to server via TCP: {_ex}");
+                Debug.Log($"Error sending data to server via TCP: {_ex}");
             }
         }
 
@@ -141,15 +140,11 @@ public class Client : MonoBehaviour
                 byte[] _packetBytes = receivedData.ReadBytes(_packetLength);
                 ThreadManager.ExecuteOnMainThread(() =>
                 {
-                    Statics.HandlePacket = true;
-
                     using (Packet _packet = new Packet(_packetBytes))
                     {
                         int _packetId = _packet.ReadInt();
                         packetHandlers[_packetId](_packet);
                     }
-
-                    Statics.HandlePacket = false;
                 });
 
                 _packetLength = 0;
@@ -177,11 +172,6 @@ public class Client : MonoBehaviour
         public UdpClient socket;
         public IPEndPoint endPoint;
 
-        public UDP()
-        {
-            //endPoint = new IPEndPoint(IPAddress.Parse(instance.ip), instance.port);
-        }
-
         public void Connect(int _localPort)
         {
             socket = new UdpClient(_localPort);
@@ -207,7 +197,7 @@ public class Client : MonoBehaviour
             }
             catch (Exception _ex)
             {
-                MelonLogger.Msg($"Client: Error sending data to server via UDP: {_ex}");
+                Debug.Log($"Error sending data to server via UDP: {_ex}");
             }
         }
 
@@ -242,20 +232,16 @@ public class Client : MonoBehaviour
 
             ThreadManager.ExecuteOnMainThread(() =>
             {
-                Statics.HandlePacket = true;
-
                 using (Packet _packet = new Packet(_data))
                 {
                     int _packetId = _packet.ReadInt();
                     packetHandlers[_packetId](_packet);
                 }
-
-                Statics.HandlePacket = false;
             });
         }
     }
     
-    private void InitializeClientData()
+    private void InitializePackets()
     {
         packetHandlers = new Dictionary<int, PacketHandler>()
         {
@@ -264,18 +250,15 @@ public class Client : MonoBehaviour
             { (int)Packets.Message, HandleData.HandleMessage },
             { (int)Packets.Movement, HandleData.HandleMovement },
             { (int)Packets.Animations, HandleData.HandleAnimations },
-            { (int)Packets.CameraAngle, HandleData.HandleCameraAngle },
-            { (int)Packets.VacconeState, HandleData.HandleVacconeState },
-            { (int)Packets.GameMode, HandleData.HandleGameModeSwitch },
             { (int)Packets.Time, HandleData.HandleTime },
-            { (int)Packets.SaveRequest, HandleData.SaveRequested },
-            { (int)Packets.Save, HandleData.HandleSave },
+            { (int)Packets.InGame, HandleData.HandleInGame },
+            { (int)Packets.SaveDataRequest, HandleData.HandleSaveDataRequest },
+            { (int)Packets.SaveData, HandleData.HandleSaveData },
             { (int)Packets.LandPlotUpgrade, HandleData.HandleLandPlotUpgrade },
             { (int)Packets.LandPlotReplace, HandleData.HandleLandPlotReplace },
-            { (int)Packets.Sleep, HandleData.HandleSleep },
             { (int)Packets.Currency, HandleData.HandleCurrency },
-            { (int)Packets.Actors, HandleData.HandleActors }
+            { (int)Packets.Sleep, HandleData.HandleSleep }
         };
-        MelonLogger.Msg("Client: Initialized packets.");
+        Debug.Log("Initialized packets.");
     }
 }

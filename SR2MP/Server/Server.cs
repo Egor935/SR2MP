@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
-using MelonLoader;
 using SR2MP;
 
 namespace GameServer
 {
-    class Server
+    public class Server
     {
         public static int MaxPlayers { get; private set; }
         public static int Port { get; private set; }
@@ -24,7 +23,7 @@ namespace GameServer
             MaxPlayers = _maxPlayers;
             Port = _port;
 
-            MelonLogger.Msg("Server: Starting server...");
+            Console.WriteLine("Starting server...");
             InitializeServerData();
 
             tcpListener = new TcpListener(IPAddress.Any, Port);
@@ -34,14 +33,14 @@ namespace GameServer
             udpListener = new UdpClient(Port);
             udpListener.BeginReceive(UDPReceiveCallback, null);
 
-            MelonLogger.Msg($"Server: Server started on port {Port}.");
+            Console.WriteLine($"Server started on port {Port}.");
         }
 
         private static void TCPConnectCallback(IAsyncResult _result)
         {
             TcpClient _client = tcpListener.EndAcceptTcpClient(_result);
             tcpListener.BeginAcceptTcpClient(TCPConnectCallback, null);
-            MelonLogger.Msg($"Server: Incoming connection from {_client.Client.RemoteEndPoint}...");
+            Console.WriteLine($"Incoming connection from {_client.Client.RemoteEndPoint}...");
 
             for (int i = 1; i <= MaxPlayers; i++)
             {
@@ -52,7 +51,7 @@ namespace GameServer
                 }
             }
 
-            MelonLogger.Msg($"Server: {_client.Client.RemoteEndPoint} failed to connect: Server full!");
+            Console.WriteLine($"{_client.Client.RemoteEndPoint} failed to connect: Server full!");
         }
 
         private static void UDPReceiveCallback(IAsyncResult _result)
@@ -91,7 +90,7 @@ namespace GameServer
             }
             catch (Exception _ex)
             {
-                MelonLogger.Msg($"Server: Error receiving UDP data: {_ex}");
+                Console.WriteLine($"Error receiving UDP data: {_ex}");
             }
         }
 
@@ -106,7 +105,7 @@ namespace GameServer
             }
             catch (Exception _ex)
             {
-                MelonLogger.Msg($"Server: Error sending data to {_clientEndPoint} via UDP: {_ex}");
+                Console.WriteLine($"Error sending data to {_clientEndPoint} via UDP: {_ex}");
             }
         }
 
@@ -124,19 +123,15 @@ namespace GameServer
                 { (int)Packets.Message, ServerHandle.TCPDataReceived },
                 { (int)Packets.Movement, ServerHandle.UDPDataReceived },
                 { (int)Packets.Animations, ServerHandle.UDPDataReceived },
-                { (int)Packets.CameraAngle, ServerHandle.UDPDataReceived },
-                { (int)Packets.VacconeState, ServerHandle.TCPDataReceived },
-                { (int)Packets.GameMode, ServerHandle.TCPDataReceived },
                 { (int)Packets.Time, ServerHandle.UDPDataReceived },
-                { (int)Packets.SaveRequest, ServerHandle.TCPDataReceived },
-                { (int)Packets.Save, ServerHandle.TCPDataReceived },
+                { (int)Packets.InGame, ServerHandle.TCPDataReceived },
+                { (int)Packets.SaveDataRequest, ServerHandle.TCPDataReceived },
+                { (int)Packets.SaveData, ServerHandle.TCPDataReceived },
                 { (int)Packets.LandPlotUpgrade, ServerHandle.TCPDataReceived },
                 { (int)Packets.LandPlotReplace, ServerHandle.TCPDataReceived },
-                { (int)Packets.Sleep, ServerHandle.TCPDataReceived },
                 { (int)Packets.Currency, ServerHandle.TCPDataReceived },
-                { (int)Packets.Actors, ServerHandle.UDPDataReceived }
+                { (int)Packets.Sleep, ServerHandle.TCPDataReceived }
             };
-            MelonLogger.Msg("Server: Initialized packets.");
         }
     }
 }

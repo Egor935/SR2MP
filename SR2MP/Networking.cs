@@ -1,6 +1,4 @@
-﻿using Il2CppInterop.Runtime.InteropTypes.Arrays;
-using MelonLoader;
-using Steamworks;
+﻿using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SR2MP
 {
-    public static class Networking
+    public class Networking
     {
         private delegate void PacketHandler(Packet _packet);
         private static Dictionary<int, PacketHandler> packetHandlers;
@@ -33,33 +31,35 @@ namespace SR2MP
 
         public static void SendTCPData(Packet packet)
         {
-            if (MultiplayerMain.Instance.SteamIsAvailable)
+            switch (LobbyManager.CurrentLobbyType)
             {
-                byte[] data = packet.ToArray();
-                SteamNetworking.SendP2PPacket(SteamLobby.Instance.Receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendReliable, 0);
-            }
-            else
-            {
-                ClientSend.SendTCPData(packet);
+                case LobbyManager.LobbyType.Steam:
+                    byte[] data = packet.ToArray();
+                    SteamNetworking.SendP2PPacket(SteamLobby.Instance.Receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendReliable, 0);
+                    break;
+                case LobbyManager.LobbyType.Custom:
+                    ClientSend.SendTCPData(packet);
+                    break;
             }
         }
 
         public static void SendUDPData(Packet packet)
         {
-            if (MultiplayerMain.Instance.SteamIsAvailable)
+            switch (LobbyManager.CurrentLobbyType)
             {
-                byte[] data = packet.ToArray();
-                SteamNetworking.SendP2PPacket(SteamLobby.Instance.Receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendUnreliable, 0);
-            }
-            else
-            {
-                ClientSend.SendUDPData(packet);
+                case LobbyManager.LobbyType.Steam:
+                    byte[] data = packet.ToArray();
+                    SteamNetworking.SendP2PPacket(SteamLobby.Instance.Receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendUnreliable, 0);
+                    break;
+                case LobbyManager.LobbyType.Custom:
+                    ClientSend.SendUDPData(packet);
+                    break;
             }
         }
 
         private static void HandleReceivedData(byte[] _data)
         {
-            Statics.HandlePacket = true;
+            Main.HandlePacket = true;
 
             using (Packet _packet = new Packet(_data))
             {
@@ -67,7 +67,7 @@ namespace SR2MP
                 packetHandlers[_packetId].Invoke(_packet);
             }
 
-            Statics.HandlePacket = false;
+            Main.HandlePacket = false;
         }
 
         public static void InitializePackets()
@@ -77,17 +77,14 @@ namespace SR2MP
                 { (int)Packets.Message, HandleData.HandleMessage },
                 { (int)Packets.Movement, HandleData.HandleMovement },
                 { (int)Packets.Animations, HandleData.HandleAnimations },
-                { (int)Packets.CameraAngle, HandleData.HandleCameraAngle },
-                { (int)Packets.VacconeState, HandleData.HandleVacconeState },
-                { (int)Packets.GameMode, HandleData.HandleGameModeSwitch },
                 { (int)Packets.Time, HandleData.HandleTime },
-                { (int)Packets.SaveRequest, HandleData.SaveRequested },
-                { (int)Packets.Save, HandleData.HandleSave },
+                { (int)Packets.InGame, HandleData.HandleInGame },
+                { (int)Packets.SaveDataRequest, HandleData.HandleSaveDataRequest },
+                { (int)Packets.SaveData, HandleData.HandleSaveData },
                 { (int)Packets.LandPlotUpgrade, HandleData.HandleLandPlotUpgrade },
                 { (int)Packets.LandPlotReplace, HandleData.HandleLandPlotReplace },
-                { (int)Packets.Sleep, HandleData.HandleSleep },
                 { (int)Packets.Currency, HandleData.HandleCurrency },
-                { (int)Packets.Actors, HandleData.HandleActors }
+                { (int)Packets.Sleep, HandleData.HandleSleep }
             };
         }
     }

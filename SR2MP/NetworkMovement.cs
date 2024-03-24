@@ -7,23 +7,21 @@ using UnityEngine;
 
 namespace SR2MP
 {
-    public class Movement : MonoBehaviour
+    public class NetworkMovement : MonoBehaviour
     {
         public Vector3 ReceivedPosition = new Vector3(529.1114f, 17.11f, 338.0007f);
         public float ReceivedRotation;
 
-        void FixedUpdate()
+        public bool MovementReceived;
+
+        void Update()
         {
-            //Update position only when we receive it
-            if (ReceivedPosition != this.transform.position)
+            if (MovementReceived)
             {
                 this.transform.position = ReceivedPosition;
-            }
-
-            //Update rotation only when we receive it
-            if (ReceivedRotation != this.transform.rotation.eulerAngles.y)
-            {
                 this.transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, ReceivedRotation, transform.rotation.eulerAngles.z);
+
+                MovementReceived = false;
             }
         }
     }

@@ -1,4 +1,4 @@
-﻿using MelonLoader;
+﻿using SR2MP;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,7 +20,7 @@ public class ThreadManager : MonoBehaviour
     {
         if (_action == null)
         {
-            MelonLogger.Msg("Client: No action to execute on main thread!");
+            Debug.Log("No action to execute on main thread!");
             return;
         }
 
@@ -36,6 +36,8 @@ public class ThreadManager : MonoBehaviour
     {
         if (actionToExecuteOnMainThread)
         {
+            Main.HandlePacket = true;
+
             executeCopiedOnMainThread.Clear();
             lock (executeOnMainThread)
             {
@@ -48,6 +50,8 @@ public class ThreadManager : MonoBehaviour
             {
                 executeCopiedOnMainThread[i]();
             }
+
+            Main.HandlePacket = false;
         }
     }
 }

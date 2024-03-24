@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
-using MelonLoader;
 
 namespace GameServer
 {
-    class Client
+    public class Client
     {
         public static int dataBufferSize = 4096;
 
@@ -63,7 +62,7 @@ namespace GameServer
                 }
                 catch (Exception _ex)
                 {
-                    MelonLogger.Msg($"Server: Error sending data to player {id} via TCP: {_ex}");
+                    Console.WriteLine($"Error sending data to player {id} via TCP: {_ex}");
                 }
             }
 
@@ -86,7 +85,7 @@ namespace GameServer
                 }
                 catch (Exception _ex)
                 {
-                    MelonLogger.Msg($"Server: Error receiving TCP data: {_ex}");
+                    Console.WriteLine($"Error receiving TCP data: {_ex}");
                     // TODO: disconnect
                 }
             }
