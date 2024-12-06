@@ -18,15 +18,18 @@ namespace SR2MP
         Callback<LobbyEnter_t> lobbyEntered;
 
         //Steam
-        public CSteamID Lobby;
-        public CSteamID Receiver = CSteamID.Nil;
+        public static CSteamID Lobby;
+        public static CSteamID Receiver = CSteamID.Nil;
 
         //Stuff
+        public static bool SteamIsAvailable;
         private bool allowCreateLobby = true;
-        private bool getSecondPlayer;
+        private static bool getSecondPlayer;
         private string secondPlayerName = "None";
 
-        public static bool Host = true;
+        public static bool Host;
+        public static bool Joined;
+        public static bool FriendInGame;
 
         public void SteamMenu()
         {
@@ -35,7 +38,6 @@ namespace SR2MP
                 if (GUI.Button(new Rect(15f, 35f, 150f, 25f), "Create lobby"))
                 {
                     CreateLobby();
-                    Host = true;
                     allowCreateLobby = false;
                 }
 
@@ -63,18 +65,18 @@ namespace SR2MP
 
             if (Receiver != CSteamID.Nil)
             {
-                string _FriendInGame = Main.FriendInGame ? "<color=green>YES</color>" : "<color=red>NO</color>";
-                GUI.Label(new Rect(15f, 155f, 150f, 25f), $"In game: {_FriendInGame}");
+                string friendInGame = FriendInGame ? "<color=green>YES</color>" : "<color=red>NO</color>";
+                GUI.Label(new Rect(15f, 155f, 150f, 25f), $"In game: {friendInGame}");
 
-                if (!Main.Joined)
+                if (!Joined)
                 {
-                    if (Main.FriendInGame)
+                    if (FriendInGame)
                     {
                         if (!SRSingleton<SystemContext>.Instance.SceneLoader.CurrentSceneGroup.IsGameplay)
                         {
                             if (GUI.Button(new Rect(40f, 185f, 100f, 25f), "Join"))
                             {
-                                Main.Joined = true;
+                                Joined = true;
                                 SendData.RequestSaveData();
                             }
                         }
@@ -85,6 +87,7 @@ namespace SR2MP
 
         void Start()
         {
+            SteamIsAvailable = SteamAPI.Init();
             Instance = this;
 
             //Create callbacks
@@ -108,16 +111,16 @@ namespace SR2MP
                 {
                     Receiver = secondPlayer;
                     secondPlayerName = SteamFriends.GetFriendPersonaName(secondPlayer);
-                    SendData.SendMessage("Welcome to the lobby");
+                    SendData.SendMessage("Welcome to the lobby!");
                     getSecondPlayer = false;
                 }
             }
         }
 
-
-        public void CreateLobby()
+        public static void CreateLobby()
         {
             SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypeFriendsOnly, 2);
+            Host = true;
             getSecondPlayer = true;
         }
 
@@ -130,19 +133,17 @@ namespace SR2MP
 
             Lobby = new CSteamID(callback.m_ulSteamIDLobby);
 
-            Debug.Log("Lobby created successfully");
+            Debug.Log("Lobby created successfully!");
         }
 
         public void OnGameLobbyJoinRequested(GameLobbyJoinRequested_t callback)
         {
-            Debug.Log("Request to join lobby");
+            Debug.Log("Request to join lobby...");
             SteamMatchmaking.JoinLobby(callback.m_steamIDLobby);
         }
 
         public void OnLobbyEntered(LobbyEnter_t callback)
         {
-            Debug.Log("You have successfully joined the lobby");
-
             var lobbyId = new CSteamID(callback.m_ulSteamIDLobby);
 
             int members = SteamMatchmaking.GetNumLobbyMembers(lobbyId);
@@ -153,11 +154,20 @@ namespace SR2MP
                 {
                     Receiver = member;
                     secondPlayerName = SteamFriends.GetFriendPersonaName(member);
-                    SendData.SendMessage($"Player {SteamFriends.GetPersonaName()} successefully connected");
+                    SendData.SendMessage($"Player {SteamFriends.GetPersonaName()} successefully connected!");
                     allowCreateLobby = false;
                     Host = false;
                 }
             }
+
+            Debug.Log("You have successfully joined the lobby!");
+        }
+
+        public static void Create()
+        {
+            var steamLobby = new GameObject("SteamLobby");
+            steamLobby.AddComponent<SteamLobby>();
+            DontDestroyOnLoad(steamLobby);
         }
     }
 }

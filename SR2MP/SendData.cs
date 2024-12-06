@@ -18,7 +18,7 @@ namespace SR2MP
             using (Packet _packet = new Packet((int)Packets.Message))
             {
                 _packet.Write(msg);
-                Networking.SendTCPData(_packet);
+                Networking.SendReliableData(_packet);
             }
         }
 
@@ -28,7 +28,7 @@ namespace SR2MP
             {
                 _packet.Write(pos);
                 _packet.Write(rot);
-                Networking.SendUDPData(_packet);
+                Networking.SendUnreliableData(_packet);
             }
         }
 
@@ -43,7 +43,7 @@ namespace SR2MP
                 _packet.Write(b1);
                 _packet.Write(f4);
                 _packet.Write(f5);
-                Networking.SendUDPData(_packet);
+                Networking.SendUnreliableData(_packet);
             }
         }
 
@@ -52,7 +52,7 @@ namespace SR2MP
             using (Packet _packet = new Packet((int)Packets.Time))
             {
                 _packet.Write(time);
-                Networking.SendUDPData(_packet);
+                Networking.SendUnreliableData(_packet);
             }
         }
 
@@ -61,7 +61,7 @@ namespace SR2MP
             using (Packet _packet = new Packet((int)Packets.InGame))
             {
                 _packet.Write(state);
-                Networking.SendTCPData(_packet);
+                Networking.SendReliableData(_packet);
             }
         }
 
@@ -69,7 +69,7 @@ namespace SR2MP
         {
             using (Packet _packet = new Packet((int)Packets.SaveDataRequest))
             {
-                Networking.SendTCPData(_packet);
+                Networking.SendReliableData(_packet);
             }
         }
 
@@ -79,7 +79,7 @@ namespace SR2MP
             {
                 _packet.Write(saveData.Length);
                 _packet.Write(saveData);
-                Networking.SendTCPData(_packet);
+                Networking.SendReliableData(_packet);
             }
         }
 
@@ -89,7 +89,7 @@ namespace SR2MP
             {
                 _packet.Write(id);
                 _packet.Write(upgrade);
-                Networking.SendTCPData(_packet);
+                Networking.SendReliableData(_packet);
             }
         }
 
@@ -99,16 +99,23 @@ namespace SR2MP
             {
                 _packet.Write(id);
                 _packet.Write(type);
-                Networking.SendTCPData(_packet);
+                Networking.SendReliableData(_packet);
             }
         }
 
-        public static void SendCurrency(int currency)
+        public static void SendCurrency(int currency, bool reliable)
         {
             using (Packet _packet = new Packet((int)Packets.Currency))
             {
                 _packet.Write(currency);
-                Networking.SendTCPData(_packet);
+                if (reliable)
+                {
+                    Networking.SendReliableData(_packet);
+                }
+                else
+                {
+                    Networking.SendUnreliableData(_packet);
+                }
             }
         }
 
@@ -117,7 +124,7 @@ namespace SR2MP
             using (Packet _packet = new Packet((int)Packets.Sleep))
             {
                 _packet.Write(endTime);
-                Networking.SendTCPData(_packet);
+                Networking.SendReliableData(_packet);
             }
         }
     }

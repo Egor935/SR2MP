@@ -10,35 +10,22 @@ using System.Threading.Tasks;
 
 namespace SR2MP
 {
-    [BepInPlugin("Egor_ICE", "SR2MP", "0.1.3")]
+    [BepInPlugin("Egor_ICE", "SR2MP", "0.1.4")]
     public class Loader : BasePlugin
     {
         public override void Load()
         {
-            InitializeSR2MP();
-            RegisterTypesInIl2Cpp();
             CreateHarmony();
+            RegisterTypes();
+            AddComponent<MultiplayerCore>();
+            AddComponent<MultiplayerUI>();
         }
 
-        private void InitializeSR2MP()
+        private void RegisterTypes()
         {
-            AddComponent<Main>();
-            AddComponent<UI>();
-            AddComponent<LobbyManager>();
-        }
-
-        private void RegisterTypesInIl2Cpp()
-        {
-            ClassInjector.RegisterTypeInIl2Cpp<NetworkPlayer>();
-            ClassInjector.RegisterTypeInIl2Cpp<NetworkMovement>();
-            ClassInjector.RegisterTypeInIl2Cpp<NetworkAnimations>();
-            ClassInjector.RegisterTypeInIl2Cpp<ReadData>();
-
             ClassInjector.RegisterTypeInIl2Cpp<SteamLobby>();
-            ClassInjector.RegisterTypeInIl2Cpp<CustomLobby>();
-            ClassInjector.RegisterTypeInIl2Cpp<Client>();
-            ClassInjector.RegisterTypeInIl2Cpp<ThreadManager>();
-            ClassInjector.RegisterTypeInIl2Cpp<GameServer.ThreadManager>();
+            ClassInjector.RegisterTypeInIl2Cpp<NetworkPlayer>();
+            ClassInjector.RegisterTypeInIl2Cpp<ReadData>();
         }
 
         private void CreateHarmony()

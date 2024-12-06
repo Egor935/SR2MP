@@ -29,37 +29,22 @@ namespace SR2MP
             }
         }
 
-        public static void SendTCPData(Packet packet)
+        public static void SendReliableData(Packet packet)
         {
-            switch (LobbyManager.CurrentLobbyType)
-            {
-                case LobbyManager.LobbyType.Steam:
-                    byte[] data = packet.ToArray();
-                    SteamNetworking.SendP2PPacket(SteamLobby.Instance.Receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendReliable, 0);
-                    break;
-                case LobbyManager.LobbyType.Custom:
-                    ClientSend.SendTCPData(packet);
-                    break;
-            }
+            byte[] data = packet.ToArray();
+            SteamNetworking.SendP2PPacket(SteamLobby.Receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendReliable, 0);
         }
 
-        public static void SendUDPData(Packet packet)
+        public static void SendUnreliableData(Packet packet)
         {
-            switch (LobbyManager.CurrentLobbyType)
-            {
-                case LobbyManager.LobbyType.Steam:
-                    byte[] data = packet.ToArray();
-                    SteamNetworking.SendP2PPacket(SteamLobby.Instance.Receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendUnreliable, 0);
-                    break;
-                case LobbyManager.LobbyType.Custom:
-                    ClientSend.SendUDPData(packet);
-                    break;
-            }
+            byte[] data = packet.ToArray();
+            SteamNetworking.SendP2PPacket(SteamLobby.Receiver, data, (uint)data.Length, EP2PSend.k_EP2PSendUnreliable, 0);
         }
 
+        public static bool HandlePacket;
         private static void HandleReceivedData(byte[] _data)
         {
-            Main.HandlePacket = true;
+            HandlePacket = true;
 
             using (Packet _packet = new Packet(_data))
             {
@@ -67,7 +52,7 @@ namespace SR2MP
                 packetHandlers[_packetId].Invoke(_packet);
             }
 
-            Main.HandlePacket = false;
+            HandlePacket = false;
         }
 
         public static void InitializePackets()

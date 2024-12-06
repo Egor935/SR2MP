@@ -1,20 +1,17 @@
-﻿using System;
+﻿using Steamworks;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using static SR2MP.LobbyManager;
 
 namespace SR2MP
 {
-    public class UI : MonoBehaviour
+    public class MultiplayerUI : MonoBehaviour
     {
         private bool menuState = true;
-
-        private Dictionary<string, string> _Donators = new Dictionary<string, string>();
-        private int donatorsStartingPoint;
 
         void OnGUI()
         {
@@ -23,39 +20,43 @@ namespace SR2MP
                 menuState = !menuState;
             }
 
+            if (!menuState)
+                return;
+
             GUI.color = Color.cyan;
             GUI.skin.label.alignment = TextAnchor.MiddleCenter;
 
-            if (menuState)
-            {
-                MainMenu();
-                DonatorsMenu();
+            GUI.Box(new Rect(10f, 10f, 160f, 300f), "<b>SR2MP</b>");
 
-                switch (CurrentLobbyType)
+            if (SteamLobby.Instance != null)
+            {
+                if (SteamLobby.SteamIsAvailable)
                 {
-                    case LobbyType.None:
-                        WelcomeMenu();
-                        break;
-                    case LobbyType.Steam:
-                        SteamLobby.Instance.SteamMenu();
-                        break;
-                    case LobbyType.Custom:
-                        CustomLobby.CustomMenu();
-                        break;
+                    SteamLobby.Instance.SteamMenu();
+                }
+                else
+                {
+                    GUI.Label(new Rect(15f, 150f, 150f, 210f), "Steam was not initialized!");
                 }
             }
-        }
-
-        private void MainMenu()
-        {
-            GUI.Box(new Rect(10f, 10f, 160f, 300f), "<b>SR2MP</b>");
+            else
+            {
+                if (GUI.Button(new Rect(15f, 35f, 150f, 25f), "Init"))
+                {
+                    SteamLobby.Create();
+                }
+            }
 
             if (GUI.Button(new Rect(15f, 280f, 150f, 25f), "Hide (~, Ё, Ö)"))
             {
                 menuState = false;
             }
+
+            DonatorsMenu();
         }
 
+        private Dictionary<string, string> _Donators = new Dictionary<string, string>();
+        private int donatorsStartingPoint;
         private void DonatorsMenu()
         {
             GUI.Box(new Rect(175f, 10f, 300f, 300f), "<b>Donators</b>");
@@ -131,27 +132,12 @@ namespace SR2MP
             }
         }
 
-        private void WelcomeMenu()
-        {
-            GUI.Label(new Rect(15f, 35f, 150f, 25f), "Choose your platform:");
-
-            if (GUI.Button(new Rect(15f, 65f, 150f, 25f), "Steam"))
-            {
-                CreateSteamLobby();
-            }
-
-            if (GUI.Button(new Rect(15f, 95f, 150f, 25f), "Other (MS, EGS)"))
-            {
-                CreateCustomLobby();
-            }
-        }
-
         void Start()
         {
-            DownloadDonatorsList();
+            DownloadListOfDonators();
         }
 
-        private void DownloadDonatorsList()
+        private void DownloadListOfDonators()
         {
             var webClient = new WebClient();
             var rawFile = webClient.DownloadString("https://raw.githubusercontent.com/Egor935/Slime-Rancher-2-Multiplayer/main/Donators.txt");

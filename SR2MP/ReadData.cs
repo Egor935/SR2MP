@@ -11,21 +11,21 @@ namespace SR2MP
 {
     public class ReadData : MonoBehaviour
     {
-        private SRCharacterController _Player;
-        private Animator _PlayerAnimator;
+        //Player
+        private Animator _Animator;
 
         //Movement
-        private Vector3 _PlayerPosition;
-        private float _PlayerRotation;
+        private Vector3 _Position;
+        private float _Rotation;
 
         //Animations
-        private float _HM;
-        private float _FM;
+        private float _HorizontalMovement;
+        private float _ForwardMovement;
         private float _Yaw;
-        private int _AS;
+        private int _AirborneState;
         private bool _Moving;
-        private float _HS;
-        private float _FS;
+        private float _HorizontalSpeed;
+        private float _ForwardSpeed;
 
         //Time
         private double _Time;
@@ -34,14 +34,40 @@ namespace SR2MP
         private bool _InGame;
         private bool _InGameCached;
 
+        //Currency
+        private int _Currency;
+        private int _CurrencyCached;
+        private bool currencyChanged;
+
         void Start()
         {
-            _Player = FindObjectOfType<SRCharacterController>();
-            _PlayerAnimator = _Player.GetComponent<Animator>();
+            _Animator = GetComponent<Animator>();
         }
 
         void Update()
         {
+            if (HandleData.CurrencyReceived)
+            {
+                _CurrencyCached = HandleData.ReceivedCurrency;
+                HandleData.CurrencyReceived = false;
+            }
+
+            ReadCurrency();
+            if (_Currency != _CurrencyCached)
+            {
+                SendData.SendCurrency(_Currency, false);
+                _CurrencyCached = _Currency;
+                //currencyChanged = true;
+            }
+            //else
+            //{
+            //    if (currencyChanged)
+            //    {
+            //        SendData.SendCurrency(_Currency, true);
+            //        currencyChanged = false;
+            //    }
+            //}
+
             ReadInGame();
             if (_InGame != _InGameCached)
             {
@@ -53,12 +79,12 @@ namespace SR2MP
         void FixedUpdate()
         {
             ReadMovement();
-            SendData.SendMovement(_PlayerPosition, _PlayerRotation);
+            SendData.SendMovement(_Position, _Rotation);
 
             ReadAnimations();
-            SendData.SendAnimations(_HM, _FM, _Yaw, _AS, _Moving, _HS, _FS);
+            SendData.SendAnimations(_HorizontalMovement, _ForwardMovement, _Yaw, _AirborneState, _Moving, _HorizontalSpeed, _ForwardSpeed);
 
-            if (!Main.Joined)
+            if (SteamLobby.Host)
             {
                 ReadTime();
                 SendData.SendTime(_Time);
@@ -67,19 +93,19 @@ namespace SR2MP
 
         private void ReadMovement()
         {
-            _PlayerPosition = _Player.transform.position;
-            _PlayerRotation = _Player.transform.rotation.eulerAngles.y;
+            _Position = this.transform.position;
+            _Rotation = this.transform.rotation.eulerAngles.y;
         }
 
         private void ReadAnimations()
         {
-            _HM = _PlayerAnimator.GetFloat("HorizontalMovement");
-            _FM = _PlayerAnimator.GetFloat("ForwardMovement");
-            _Yaw = _PlayerAnimator.GetFloat("Yaw");
-            _AS = _PlayerAnimator.GetInteger("AirborneState");
-            _Moving = _PlayerAnimator.GetBool("Moving");
-            _HS = _PlayerAnimator.GetFloat("HorizontalSpeed");
-            _FS = _PlayerAnimator.GetFloat("ForwardSpeed");
+            _HorizontalMovement = _Animator.GetFloat("HorizontalMovement");
+            _ForwardMovement = _Animator.GetFloat("ForwardMovement");
+            _Yaw = _Animator.GetFloat("Yaw");
+            _AirborneState = _Animator.GetInteger("AirborneState");
+            _Moving = _Animator.GetBool("Moving");
+            _HorizontalSpeed = _Animator.GetFloat("HorizontalSpeed");
+            _ForwardSpeed = _Animator.GetFloat("ForwardSpeed");
         }
 
         private void ReadTime()
@@ -94,6 +120,11 @@ namespace SR2MP
             {
                 _InGame = _SystemContext.SceneLoader.CurrentSceneGroup.IsGameplay;
             }
+        }
+
+        private void ReadCurrency()
+        {
+            _Currency = SRSingleton<SceneContext>.Instance.PlayerState._model.currency;
         }
     }
 }

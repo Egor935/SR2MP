@@ -21,26 +21,37 @@ namespace SR2MP
 
         public static void HandleMovement(Packet _packet)
         {
+            var pos = _packet.ReadVector3();
+            var rot = _packet.ReadFloat();
+
             if (NetworkPlayer.Instance != null)
             {
-                NetworkPlayer.Instance.Movement.ReceivedPosition = _packet.ReadVector3();
-                NetworkPlayer.Instance.Movement.ReceivedRotation = _packet.ReadFloat();
-                NetworkPlayer.Instance.Movement.MovementReceived = true;
+                NetworkPlayer.Instance.ReceivedPosition = pos;
+                NetworkPlayer.Instance.ReceivedRotation = rot;
+                NetworkPlayer.Instance.MovementReceived = true;
             }
         }
 
         public static void HandleAnimations(Packet _packet)
         {
+            var horizontalMovement = _packet.ReadFloat();
+            var forwardMovement = _packet.ReadFloat();
+            var yaw = _packet.ReadFloat();
+            var airborneState = _packet.ReadInt();
+            var moving = _packet.ReadBool();
+            var horizontalSpeed = _packet.ReadFloat();
+            var forwardSpeed = _packet.ReadFloat();
+
             if (NetworkPlayer.Instance != null)
             {
-                NetworkPlayer.Instance.Animations.HM = _packet.ReadFloat();
-                NetworkPlayer.Instance.Animations.FM = _packet.ReadFloat();
-                NetworkPlayer.Instance.Animations.Yaw = _packet.ReadFloat();
-                NetworkPlayer.Instance.Animations.AS = _packet.ReadInt();
-                NetworkPlayer.Instance.Animations.Moving = _packet.ReadBool();
-                NetworkPlayer.Instance.Animations.HS = _packet.ReadFloat();
-                NetworkPlayer.Instance.Animations.FS = _packet.ReadFloat();
-                NetworkPlayer.Instance.Animations.AnimationsReceived = true;
+                NetworkPlayer.Instance.HorizontalMovement = horizontalMovement;
+                NetworkPlayer.Instance.ForwardMovement = forwardMovement;
+                NetworkPlayer.Instance.Yaw = yaw;
+                NetworkPlayer.Instance.AirborneState = airborneState;
+                NetworkPlayer.Instance.Moving = moving;
+                NetworkPlayer.Instance.HorizontalSpeed = horizontalSpeed;
+                NetworkPlayer.Instance.ForwardSpeed = forwardSpeed;
+                NetworkPlayer.Instance.AnimationsReceived = true;
             }
         }
 
@@ -60,7 +71,7 @@ namespace SR2MP
         public static void HandleInGame(Packet _packet)
         {
             var inGame = _packet.ReadBool();
-            Main.FriendInGame = inGame;
+            SteamLobby.FriendInGame = inGame;
         }
 
         public static void HandleSaveDataRequest(Packet _packet)
@@ -141,16 +152,21 @@ namespace SR2MP
             }
         }
 
+        public static int ReceivedCurrency;
+        public static bool CurrencyReceived;
         public static void HandleCurrency(Packet _packet)
         {
-            var value = _packet.ReadInt();
+            var currency = _packet.ReadInt();
 
             if (SRSingleton<SceneContext>.Instance != null)
             {
-                int difference = value - SRSingleton<SceneContext>.Instance.PlayerState._model.currency;
-                SRSingleton<SceneContext>.Instance.PlayerState._model.currency = value;
+                int difference = currency - SRSingleton<SceneContext>.Instance.PlayerState._model.currency;
+                SRSingleton<SceneContext>.Instance.PlayerState._model.currency = currency;
                 SRSingleton<PopupElementsUI>.Instance.CreateCoinsPopup(difference, PlayerState.CoinsType.NORM);
             }
+
+            ReceivedCurrency = currency;
+            CurrencyReceived = true;
         }
 
         public static void HandleSleep(Packet _packet)
