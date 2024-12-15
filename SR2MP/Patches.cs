@@ -14,22 +14,6 @@ using UnityEngine;
 
 namespace SR2MP
 {
-    [HarmonyPatch(typeof(FileStorageProvider), nameof(FileStorageProvider.GetGameData))]
-    class FileStorageProvider_GetGameData
-    {
-        public static MemoryStream ReceivedSave;
-        public static bool Prefix(FileStorageProvider __instance, MemoryStream dataStream)
-        {
-            if (ReceivedSave != null)
-            {
-                __instance.CopyStream(ReceivedSave, dataStream);
-                ReceivedSave = null;
-                return false;
-            }
-            return true;
-        }
-    }
-
     [HarmonyPatch(typeof(AutoSaveDirector), nameof(AutoSaveDirector.SaveGame))]
     class AutoSaveDirector_SaveGame
     {

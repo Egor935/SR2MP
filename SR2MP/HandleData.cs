@@ -79,6 +79,7 @@ namespace SR2MP
             var memoryStream = new Il2CppSystem.IO.MemoryStream();
             SRSingleton<GameContext>.Instance.AutoSaveDirector.SaveGame();
             SRSingleton<GameContext>.Instance.AutoSaveDirector.SavedGame.Save(memoryStream);
+            memoryStream.Seek(0L, Il2CppSystem.IO.SeekOrigin.Begin);
 
             var arraySave = memoryStream.ToArray();
             using (MemoryStream outputStream = new MemoryStream())
@@ -110,8 +111,9 @@ namespace SR2MP
                 }
             }
 
-            FileStorageProvider_GetGameData.ReceivedSave = new Il2CppSystem.IO.MemoryStream(array);
-            SRSingleton<GameContext>.Instance.AutoSaveDirector.BeginLoad(null, null, null);
+            var memoryStream = new Il2CppSystem.IO.MemoryStream(array);
+            memoryStream.Seek(0L, Il2CppSystem.IO.SeekOrigin.Begin);
+            SRSingleton<GameContext>.Instance.AutoSaveDirector.BeginLoad(memoryStream, "SR2MP", "SR2MP");
         }
 
         public static void HandleLandPlotUpgrade(Packet _packet)
