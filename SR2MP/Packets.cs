@@ -6,8 +6,6 @@ using UnityEngine;
 
 public enum Packets
 {
-    Welcome,
-    UDP,
     Message,
     Movement,
     Animations,
@@ -18,7 +16,10 @@ public enum Packets
     LandPlotUpgrade,
     LandPlotReplace,
     Currency,
-    Sleep
+    Sleep,
+    Prices,
+    MapOpen,
+    GordoEat
 }
 
 public class Packet : IDisposable

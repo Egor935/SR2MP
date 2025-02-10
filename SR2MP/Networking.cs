@@ -69,7 +69,10 @@ namespace SR2MP
                 { (int)Packets.LandPlotUpgrade, HandleData.HandleLandPlotUpgrade },
                 { (int)Packets.LandPlotReplace, HandleData.HandleLandPlotReplace },
                 { (int)Packets.Currency, HandleData.HandleCurrency },
-                { (int)Packets.Sleep, HandleData.HandleSleep }
+                { (int)Packets.Sleep, HandleData.HandleSleep },
+                { (int)Packets.Prices, HandleData.HandlePrices },
+                { (int)Packets.MapOpen, HandleData.HandleMapOpen },
+                { (int)Packets.GordoEat, HandleData.HandleGordoEat }
             };
         }
     }

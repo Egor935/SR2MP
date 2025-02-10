@@ -1,10 +1,5 @@
 ﻿using HarmonyLib;
-using Il2CppMonomiPark.SlimeRancher;
-using Il2CppMonomiPark.SlimeRancher.DataModel;
-using Il2CppMonomiPark.SlimeRancher.Regions;
-using Il2CppMonomiPark.SlimeRancher.SceneManagement;
 using Il2CppMonomiPark.SlimeRancher.UI;
-using Il2CppSystem.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +9,7 @@ using UnityEngine;
 
 namespace SR2MP
 {
-    [HarmonyPatch(typeof(AutoSaveDirector), nameof(AutoSaveDirector.SaveGame))]
+    //[HarmonyPatch(typeof(AutoSaveDirector), nameof(AutoSaveDirector.SaveGame))]
     class AutoSaveDirector_SaveGame
     {
         public static bool Prefix()
@@ -30,8 +25,8 @@ namespace SR2MP
         {
             if (!Networking.HandlePacket)
             {
-                var id = __instance.transform.parent.GetComponent<LandPlotLocation>().Id;
-                SendData.SendLandPlotUpgrade(id, (int)upgrade);
+                var name = __instance.GetComponentInParent<LandPlotLocation>().name;
+                SendData.SendLandPlotUpgrade(name, (int)upgrade);
             }
         }
     }
@@ -43,9 +38,8 @@ namespace SR2MP
         {
             if (!Networking.HandlePacket)
             {
-                var id = __instance.Id;
                 var type = (int)replacementPrefab.GetComponent<LandPlot>().TypeId;
-                SendData.SendLandPlotReplace(id, type);
+                SendData.SendLandPlotReplace(__instance.name, type);
             }
         }
     }
@@ -56,6 +50,52 @@ namespace SR2MP
         public static void Postfix(double endTime)
         {
             SendData.SendSleep(endTime);
+        }
+    }
+
+    [HarmonyPatch(typeof(EconomyDirector), nameof(EconomyDirector.ResetPrices))]
+    class EconomyDirector_ResetPrices
+    {
+        public static float[] ReceivedPrices;
+        public static void Postfix(EconomyDirector __instance)
+        {
+            if (SteamLobby.Host)
+            {
+                SendData.SendPrices(__instance._currValueMap);
+            }
+            else
+            {
+                int index = 0;
+                foreach (var price in __instance._currValueMap)
+                {
+                    price.value.CurrValue = ReceivedPrices[index];
+                    index++;
+                }
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(TechUIInteractable), nameof(TechUIInteractable.OnInteract))]
+    class TechUIInteractable_OnInteract
+    {
+        public static void Postfix(TechUIInteractable __instance)
+        {
+            if (!Networking.HandlePacket)
+            {
+                SendData.SendMapOpen(__instance.name);
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(GordoEat), nameof(GordoEat.SetEatenCount))]
+    class GordoEat_SetEatenCount
+    {
+        public static void Postfix(GordoEat __instance, int eatenCount)
+        {
+            if (!Networking.HandlePacket)
+            {
+                SendData.SendGordoEat(__instance.name, eatenCount);
+            }
         }
     }
 }

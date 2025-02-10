@@ -1,12 +1,10 @@
-﻿using Il2CppMonomiPark.SlimeRancher.DataModel;
-using Il2CppMonomiPark.SlimeRancher.Persist;
-using Il2CppSystem.IO;
+﻿using Il2CppSystem.Collections.Generic;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
+//using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using UnityEngine;
 
 namespace SR2MP
@@ -83,21 +81,21 @@ namespace SR2MP
             }
         }
 
-        public static void SendLandPlotUpgrade(string id, int upgrade)
+        public static void SendLandPlotUpgrade(string name, int upgrade)
         {
             using (Packet _packet = new Packet((int)Packets.LandPlotUpgrade))
             {
-                _packet.Write(id);
+                _packet.Write(name);
                 _packet.Write(upgrade);
                 Networking.SendReliableData(_packet);
             }
         }
 
-        public static void SendLandPlotReplace(string id, int type)
+        public static void SendLandPlotReplace(string name, int type)
         {
             using (Packet _packet = new Packet((int)Packets.LandPlotReplace))
             {
-                _packet.Write(id);
+                _packet.Write(name);
                 _packet.Write(type);
                 Networking.SendReliableData(_packet);
             }
@@ -124,6 +122,38 @@ namespace SR2MP
             using (Packet _packet = new Packet((int)Packets.Sleep))
             {
                 _packet.Write(endTime);
+                Networking.SendReliableData(_packet);
+            }
+        }
+
+        public static void SendPrices(Dictionary<IdentifiableType, EconomyDirector.CurrValueEntry> prices)
+        {
+            using (Packet _packet = new Packet((int)Packets.Prices))
+            {
+                _packet.Write(prices.Count);
+                foreach (var price in prices)
+                {
+                    _packet.Write(price.Value.CurrValue);
+                }
+                Networking.SendReliableData(_packet);
+            }
+        }
+
+        public static void SendMapOpen(string name)
+        {
+            using (Packet _packet = new Packet((int)Packets.MapOpen))
+            {
+                _packet.Write(name);
+                Networking.SendReliableData(_packet);
+            }
+        }
+
+        public static void SendGordoEat(string name, int eatenCount)
+        {
+            using (Packet _packet = new Packet((int)Packets.GordoEat))
+            {
+                _packet.Write(name);
+                _packet.Write(eatenCount);
                 Networking.SendReliableData(_packet);
             }
         }

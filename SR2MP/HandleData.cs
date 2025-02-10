@@ -8,6 +8,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace SR2MP
 {
@@ -118,39 +119,29 @@ namespace SR2MP
 
         public static void HandleLandPlotUpgrade(Packet _packet)
         {
-            var id = _packet.ReadString();
+            var name = _packet.ReadString();
             var upgrade = _packet.ReadInt();
 
-            if (SRSingleton<SceneContext>.Instance != null)
+            var gameObject = GameObject.Find(name);
+            if (gameObject != null)
             {
-                if (SRSingleton<SceneContext>.Instance.GameModel.landPlots.TryGetValue(id, out LandPlotModel model))
-                {
-                    if (model.gameObj != null)
-                    {
-                        var landPlot = model.gameObj.GetComponentInChildren<LandPlot>();
-                        landPlot.AddUpgrade((LandPlot.Upgrade)upgrade);
-                    }
-                }
+                var landPlot = gameObject.GetComponentInChildren<LandPlot>();
+                landPlot.AddUpgrade((LandPlot.Upgrade)upgrade);
             }
         }
 
         public static void HandleLandPlotReplace(Packet _packet)
         {
-            var id = _packet.ReadString();
+            var name = _packet.ReadString();
             var type = _packet.ReadInt();
 
-            if (SRSingleton<SceneContext>.Instance != null)
+            var gameObject = GameObject.Find(name);
+            if (gameObject != null)
             {
-                if (SRSingleton<SceneContext>.Instance.GameModel.landPlots.TryGetValue(id, out LandPlotModel model))
-                {
-                    if (model.gameObj != null)
-                    {
-                        var landPlotLocation = model.gameObj.GetComponentInChildren<LandPlotLocation>();
-                        var oldLandPlot = model.gameObj.GetComponentInChildren<LandPlot>();
-                        var replacementPrefab = SRSingleton<GameContext>.Instance.LookupDirector.GetPlotPrefab((LandPlot.Id)type);
-                        landPlotLocation.Replace(oldLandPlot, replacementPrefab);
-                    }
-                }
+                var landPlotLocation = gameObject.GetComponent<LandPlotLocation>();
+                var oldLandPlot = landPlotLocation.GetComponentInChildren<LandPlot>();
+                var replacementPrefab = SRSingleton<GameContext>.Instance.LookupDirector.GetPlotPrefab((LandPlot.Id)type);
+                landPlotLocation.Replace(oldLandPlot, replacementPrefab);
             }
         }
 
@@ -178,6 +169,48 @@ namespace SR2MP
             if (SRSingleton<LockOnDeath>.Instance != null)
             {
                 SRSingleton<LockOnDeath>.Instance.LockUntil(endTime, 0f);
+            }
+        }
+
+        public static void HandlePrices(Packet _packet)
+        {
+            var count = _packet.ReadInt();
+
+            var prices = new float[count];
+            for (int i = 0; i < count; i++)
+            {
+                prices[i] = _packet.ReadFloat();
+            }
+            EconomyDirector_ResetPrices.ReceivedPrices = prices;
+        }
+
+        public static void HandleMapOpen(Packet _packet)
+        {
+            var name = _packet.ReadString();
+
+            var gameObject = GameObject.Find(name);
+            if (gameObject != null)
+            {
+                var techUIInteractable = gameObject.GetComponent<TechUIInteractable>();
+                techUIInteractable.OnInteract();
+            }
+        }
+
+        public static void HandleGordoEat(Packet _packet)
+        {
+            var name = _packet.ReadString();
+            var count = _packet.ReadInt();
+
+            var gameObject = GameObject.Find(name);
+            if (gameObject != null)
+            {
+                var gordoEat = gameObject.GetComponent<GordoEat>();
+                gordoEat.GordoModel.GordoEatenCount = count;
+
+                if (gordoEat.GetEatenCount() >= gordoEat.GetTargetCount())
+                {
+                    gordoEat.StartCoroutine(gordoEat.ReachedTarget());
+                }
             }
         }
     }
