@@ -35,13 +35,10 @@ namespace SR2MP
 
             if (setUpBeatrix)
             {
-                if (SceneContext.Instance != null)
+                if (localPlayer != null)
                 {
-                    if (SceneContext.Instance.Player != null)
-                    {
-                        SetNetworkPlayerAnimator();
-                        setUpBeatrix = false;
-                    }
+                    SetNetworkPlayerAnimator();
+                    setUpBeatrix = false;
                 }
             }
 
@@ -68,7 +65,7 @@ namespace SR2MP
 
         private void SetNetworkPlayerAnimator()
         {
-            var localPlayerAnimator = SceneContext.Instance.Player.GetComponent<Animator>();
+            var localPlayerAnimator = localPlayer.GetComponent<Animator>();
             NetworkPlayer.Instance.PlayerAnimator.avatar = localPlayerAnimator.avatar;
             NetworkPlayer.Instance.PlayerAnimator.runtimeAnimatorController = localPlayerAnimator.runtimeAnimatorController;
         }
